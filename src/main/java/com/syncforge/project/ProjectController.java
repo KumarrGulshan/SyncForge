@@ -24,4 +24,10 @@ public class ProjectController {
 
         return projectService.getUserProjects();
     }
+    @PostMapping("/{projectId}/members")
+    public Project addMember(@PathVariable String projectId,
+                             @RequestBody AddMemberRequest request) {
+
+        return projectService.addMember(projectId, request);
+    }
 }
