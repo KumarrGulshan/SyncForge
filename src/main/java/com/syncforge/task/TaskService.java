@@ -45,5 +45,17 @@ public class TaskService {
 
         return taskRepository.findByProjectId(projectId);
     }
+    public Task updateTaskStatus(String taskId, UpdateTaskStatusRequest request) {
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Access denied"));
+
+        projectSecurityService.validateProjectMember(task.getProjectId());
+
+        task.setStatus(request.status());
+        task.setUpdatedAt(Instant.now());
+
+        return taskRepository.save(task);
+    }
 
 }

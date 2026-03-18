@@ -24,4 +24,10 @@ public class TaskController {
 
         return taskService.getProjectTasks(projectId);
     }
+    @PatchMapping("/{taskId}/status")
+    public Task updateStatus(@PathVariable String taskId,
+                             @RequestBody UpdateTaskStatusRequest request) {
+
+        return taskService.updateTaskStatus(taskId, request);
+    }
 }
