@@ -3,6 +3,7 @@ package com.syncforge.task;
 import com.syncforge.common.security.SecurityUtils;
 import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.user.User;
+import com.syncforge.websocket.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +16,11 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
+    private final WebSocketService webSocketService;
 
     public Task createTask(String projectId, CreateTaskRequest request) {
 
         // 🔐 SECURITY CHECK
-        // Ensure the current user belongs to this project
         projectSecurityService.validateProjectMember(projectId);
 
         User currentUser = SecurityUtils.getCurrentUser();
@@ -35,7 +36,13 @@ public class TaskService {
                 .updatedAt(Instant.now())
                 .build();
 
-        return taskRepository.save(task);
+        // 💾 SAVE TASK
+        Task savedTask = taskRepository.save(task);
+
+        // ⚡ SEND REAL-TIME EVENT
+        webSocketService.sendTaskUpdate(projectId, savedTask);
+
+        return savedTask;
     }
 
     public List<Task> getProjectTasks(String projectId) {
@@ -45,17 +52,24 @@ public class TaskService {
 
         return taskRepository.findByProjectId(projectId);
     }
+
     public Task updateTaskStatus(String taskId, UpdateTaskStatusRequest request) {
 
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Access denied"));
+                .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        // 🔐 SECURITY CHECK
         projectSecurityService.validateProjectMember(task.getProjectId());
 
         task.setStatus(request.status());
         task.setUpdatedAt(Instant.now());
 
-        return taskRepository.save(task);
-    }
+        // 💾 SAVE UPDATED TASK
+        Task updatedTask = taskRepository.save(task);
 
+        // ⚡ SEND REAL-TIME EVENT
+        webSocketService.sendTaskUpdate(task.getProjectId(), updatedTask);
+
+        return updatedTask;
+    }
 }
