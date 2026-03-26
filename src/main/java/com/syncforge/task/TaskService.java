@@ -1,8 +1,10 @@
 package com.syncforge.task;
 
 import com.syncforge.common.security.SecurityUtils;
+import com.syncforge.notification.NotificationService;
 import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.user.User;
+import com.syncforge.websocket.SocketEvent;
 import com.syncforge.websocket.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
     private final WebSocketService webSocketService;
+    private final NotificationService notificationService;
 
     public Task createTask(String projectId, CreateTaskRequest request) {
 
@@ -39,8 +42,22 @@ public class TaskService {
         // 💾 SAVE TASK
         Task savedTask = taskRepository.save(task);
 
-        // ⚡ SEND REAL-TIME EVENT
-        webSocketService.sendTaskUpdate(projectId, savedTask);
+        // ⚡ REAL-TIME EVENT → TASK_CREATED
+        SocketEvent event = SocketEvent.builder()
+                .type("TASK_CREATED")
+                .data(savedTask)
+                .build();
+
+        webSocketService.sendProjectEvent(projectId, event);
+
+        // 🔔 NOTIFICATION (assigned user)
+        if (request.assignedTo() != null) {
+            notificationService.sendNotification(
+                    request.assignedTo(),
+                    "New task assigned: " + request.title(),
+                    savedTask.getId()
+            );
+        }
 
         return savedTask;
     }
@@ -67,8 +84,22 @@ public class TaskService {
         // 💾 SAVE UPDATED TASK
         Task updatedTask = taskRepository.save(task);
 
-        // ⚡ SEND REAL-TIME EVENT
-        webSocketService.sendTaskUpdate(task.getProjectId(), updatedTask);
+        // ⚡ REAL-TIME EVENT → TASK_STATUS_UPDATED
+        SocketEvent event = SocketEvent.builder()
+                .type("TASK_STATUS_UPDATED")
+                .data(updatedTask)
+                .build();
+
+        webSocketService.sendProjectEvent(task.getProjectId(), event);
+
+        // 🔔 NOTIFICATION (assigned user)
+        if (task.getAssignedTo() != null) {
+            notificationService.sendNotification(
+                    task.getAssignedTo(),
+                    "Task status updated to " + request.status(),
+                    task.getId()
+            );
+        }
 
         return updatedTask;
     }

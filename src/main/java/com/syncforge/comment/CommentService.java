@@ -1,12 +1,14 @@
 package com.syncforge.comment;
 
 import com.syncforge.common.security.SecurityUtils;
+import com.syncforge.notification.NotificationService;
 import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.task.Task;
 import com.syncforge.task.TaskRepository;
 import com.syncforge.user.User;
-import com.syncforge.websocket.WebSocketService;
+import com.syncforge.websocket.SocketEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,7 +21,10 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
-    private final WebSocketService webSocketService;
+    private final NotificationService notificationService;
+
+    // 🔥 Direct messaging (better control for event types)
+    private final SimpMessagingTemplate messagingTemplate;
 
     public Comment addComment(String taskId, AddCommentRequest request) {
 
@@ -39,8 +44,27 @@ public class CommentService {
 
         Comment saved = commentRepository.save(comment);
 
+        // 🔥 Real-time COMMENT event (correct type)
+        SocketEvent event = SocketEvent.builder()
+                .type("COMMENT_ADDED")
+                .data(saved)
+                .build();
 
-        webSocketService.sendTaskUpdate(task.getProjectId(), saved);
+        messagingTemplate.convertAndSend(
+                "/topic/project/" + task.getProjectId(),
+                event
+        );
+
+        // 🔔 Notify assigned user (avoid self-notification)
+        if (task.getAssignedTo() != null &&
+                !task.getAssignedTo().equals(user.getId())) {
+
+            notificationService.sendNotification(
+                    task.getAssignedTo(),
+                    "New comment on your task: " + task.getTitle(),
+                    taskId
+            );
+        }
 
         return saved;
     }

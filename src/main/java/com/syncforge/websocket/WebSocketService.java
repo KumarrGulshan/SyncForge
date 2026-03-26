@@ -10,11 +10,25 @@ public class WebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void sendTaskUpdate(String projectId, Object payload) {
-
+    // ✅ Project-level events
+    public void sendProjectEvent(String projectId, SocketEvent event) {
         messagingTemplate.convertAndSend(
                 "/topic/project/" + projectId,
-                payload
+                event
+        );
+    }
+
+    // ✅ User-level notifications
+    public void sendUserNotification(String userId, Object payload) {
+
+        SocketEvent event = SocketEvent.builder()
+                .type("NOTIFICATION")
+                .data(payload)
+                .build();
+
+        messagingTemplate.convertAndSend(
+                "/topic/user-" + userId,
+                event
         );
     }
 }
