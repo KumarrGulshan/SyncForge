@@ -5,21 +5,27 @@ class AuthService {
 
   static Future<bool> login(String email, String password) async {
 
-    final response = await ApiClient.post(
-      "/auth/login",
-      {
-        "email": email,
-        "password": password
-      },
-    );
+  print("LOGIN BUTTON PRESSED");
+  print("Email: $email");
 
-    final token = response["accessToken"];
+  final response = await ApiClient.post(
+    "/auth/login",
+    {
+      "email": email,
+      "password": password
+    },
+  );
 
-    if (token != null) {
-      await TokenStorage.saveToken(token);
-      return true;
-    }
+  print("SERVER RESPONSE:");
+  print(response);
 
-    return false;
+  final token = response["accessToken"];
+
+  if (token != null) {
+    await TokenStorage.saveToken(token);
+    return true;
   }
+
+  return false;
+ }
 }

@@ -1,0 +1,224 @@
+import 'package:flutter/material.dart';
+import 'task_service.dart';
+import 'task_model.dart';
+import '../../core/storage/token_storage.dart';
+import '../../core/websocket/socket_service.dart';
+
+class TaskBoardScreen extends StatefulWidget {
+  final String projectId;
+
+  const TaskBoardScreen({super.key, required this.projectId});
+
+  @override
+  State<TaskBoardScreen> createState() => _TaskBoardScreenState();
+}
+
+class _TaskBoardScreenState extends State<TaskBoardScreen> {
+
+  late Future<List<Task>> _tasksFuture;
+  final SocketService socket = SocketService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+    _connectSocket();
+  }
+
+  void _loadTasks() {
+    _tasksFuture = TaskService.getTasks(widget.projectId);
+  }
+
+  Future<void> _connectSocket() async {
+
+    final token = await TokenStorage.getToken();
+    if (token == null) return;
+
+    socket.connect(
+      projectId: widget.projectId,
+      token: token,
+      onMessage: (message) {
+
+        print("Realtime update received: $message");
+
+        setState(() {
+          _loadTasks();
+        });
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    super.dispose();
+  }
+
+  List<Task> _filter(List<Task> tasks, String status) {
+    return tasks.where((t) => t.status == status).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Task Board"),
+      ),
+
+      body: FutureBuilder<List<Task>>(
+        future: _tasksFuture,
+        builder: (context, snapshot) {
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No tasks found"));
+          }
+
+          final tasks = snapshot.data!;
+
+          final todo = _filter(tasks, "TODO");
+          final progress = _filter(tasks, "IN_PROGRESS");
+          final done = _filter(tasks, "DONE");
+
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  _buildColumn("TODO", todo),
+                  _buildColumn("IN_PROGRESS", progress),
+                  _buildColumn("DONE", done),
+
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildColumn(String status, List<Task> tasks) {
+
+    String title = status.replaceAll("_", " ");
+
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.all(12),
+
+      child: DragTarget<Task>(
+
+        onAccept: (task) async {
+
+          if (task.status != status) {
+
+            await TaskService.updateStatus(
+              widget.projectId,
+              task.id,
+              status,
+            );
+
+            setState(() {
+              _loadTasks();
+            });
+          }
+        },
+
+        builder: (context, candidateData, rejectedData) {
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: tasks.length,
+
+                  itemBuilder: (context, index) {
+
+                    final task = tasks[index];
+
+                    return LongPressDraggable<Task>(
+
+                      data: task,
+
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: _taskCard(task),
+                      ),
+
+                      childWhenDragging: Opacity(
+                        opacity: 0.4,
+                        child: _taskCard(task),
+                      ),
+
+                      child: _taskCard(task),
+                    );
+                  },
+                ),
+              )
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _taskCard(Task task) {
+
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.only(bottom: 12),
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            Text(
+              task.title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            if (task.description.isNotEmpty)
+              Text(
+                task.description,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
