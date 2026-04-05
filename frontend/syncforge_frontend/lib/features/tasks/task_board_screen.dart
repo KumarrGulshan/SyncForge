@@ -62,12 +62,20 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+
       appBar: AppBar(
         title: const Text("Task Board"),
       ),
 
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateTaskDialog,
+        child: const Icon(Icons.add),
+      ),
+
       body: FutureBuilder<List<Task>>(
+
         future: _tasksFuture,
+
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -86,8 +94,10 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+
             child: SizedBox(
               height: MediaQuery.of(context).size.height,
+
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -219,6 +229,71 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showCreateTaskDialog() {
+
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+
+    showDialog(
+      context: context,
+
+      builder: (context) {
+
+        return AlertDialog(
+          title: const Text("Create Task"),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: "Task Title",
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+
+                await TaskService.createTask(
+                  widget.projectId,
+                  titleController.text,
+                  descController.text,
+                );
+
+                Navigator.pop(context);
+
+                setState(() {
+                  _loadTasks();
+                });
+              },
+              child: const Text("Create"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

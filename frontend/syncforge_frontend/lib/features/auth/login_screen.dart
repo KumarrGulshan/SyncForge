@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/widgets/custom_textfield.dart';
 import 'auth_service.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -56,17 +59,20 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24),
+
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 420,
-              ),
+              constraints: const BoxConstraints(maxWidth: 420),
+
               child: Card(
                 elevation: 6,
+
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+
                 child: Padding(
                   padding: const EdgeInsets.all(24),
+
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -99,16 +105,47 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         height: 48,
-                        child: ElevatedButton(
 
+                        child: ElevatedButton(
                           onPressed: loading ? null : login,
 
                           child: loading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
                               : const Text("Login"),
                         ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+
+                          const Text("Don't have an account?"),
+
+                          TextButton(
+                            onPressed: () {
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen(),
+                                ),
+                              );
+
+                            },
+
+                            child: const Text("Register"),
+                          )
+
+                        ],
                       ),
 
                     ],

@@ -4,6 +4,8 @@ import 'project_model.dart';
 import '../../core/widgets/project_card.dart';
 
 class ProjectListScreen extends StatefulWidget {
+  const ProjectListScreen({super.key});
+
   @override
   State<ProjectListScreen> createState() => _ProjectListScreenState();
 }
@@ -15,15 +17,89 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
   @override
   void initState() {
     super.initState();
+    _loadProjects();
+  }
+
+  void _loadProjects() {
     projects = ProjectService.getProjects();
+  }
+
+  void _showCreateProjectDialog() {
+
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+
+        return AlertDialog(
+          title: const Text("Create Project"),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: "Project Name",
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+
+                await ProjectService.createProject(
+                  nameController.text.trim(),
+                  descController.text.trim(),
+                );
+
+                Navigator.pop(context);
+
+                setState(() {
+                  _loadProjects();
+                });
+
+              },
+              child: const Text("Create"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+
       appBar: AppBar(
         title: const Text("SyncForge Projects"),
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateProjectDialog,
+        child: const Icon(Icons.add),
       ),
 
       body: FutureBuilder<List<Project>>(

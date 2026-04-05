@@ -1,31 +1,58 @@
-import '../../core/api/api_client.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 import '../../core/storage/token_storage.dart';
 
 class AuthService {
 
+  static const String baseUrl = "http://192.168.1.147:8080";
+
   static Future<bool> login(String email, String password) async {
 
-  print("LOGIN BUTTON PRESSED");
-  print("Email: $email");
+    final response = await http.post(
+      Uri.parse("$baseUrl/api/auth/login"),
 
-  final response = await ApiClient.post(
-    "/auth/login",
-    {
-      "email": email,
-      "password": password
-    },
-  );
+      headers: {
+        "Content-Type": "application/json"
+      },
 
-  print("SERVER RESPONSE:");
-  print(response);
+      body: jsonEncode({
+        "email": email,
+        "password": password
+      }),
+    );
 
-  final token = response["accessToken"];
+    if (response.statusCode == 200) {
 
-  if (token != null) {
-    await TokenStorage.saveToken(token);
-    return true;
+      final data = jsonDecode(response.body);
+
+      await TokenStorage.saveToken(data["accessToken"]);
+
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
-  return false;
- }
+  static Future<void> register(
+    String name,
+    String email,
+    String password,
+  ) async {
+
+    await http.post(
+      Uri.parse("$baseUrl/api/auth/register"),
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: jsonEncode({
+        "name": name,
+        "email": email,
+        "password": password
+      }),
+    );
+  }
 }

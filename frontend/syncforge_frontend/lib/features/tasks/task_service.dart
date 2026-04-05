@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_client.dart';
@@ -8,9 +7,9 @@ import 'task_model.dart';
 
 class TaskService {
 
-  static const String baseUrl = "http://192.168.1.144:8080/api";
+  static const String baseUrl = "http://192.168.1.147:8080/api";
 
-
+  /// Fetch all tasks of a project
   static Future<List<Task>> getTasks(String projectId) async {
 
     final token = await TokenStorage.getToken();
@@ -25,15 +24,16 @@ class TaskService {
         .toList();
   }
 
+  /// Update task status (Drag & Drop)
   static Future<void> updateStatus(
-      String projectId,
-      String taskId,
-      String status,
-      ) async {
+    String projectId,
+    String taskId,
+    String status,
+  ) async {
 
     final token = await TokenStorage.getToken();
 
-    await http.patch(
+    final response = await http.patch(
       Uri.parse("$baseUrl/projects/$projectId/tasks/$taskId/status"),
 
       headers: {
@@ -45,17 +45,22 @@ class TaskService {
         "status": status
       }),
     );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to update task status");
+    }
   }
 
+  /// Create a new task
   static Future<void> createTask(
-      String projectId,
-      String title,
-      String description,
-      ) async {
+    String projectId,
+    String title,
+    String description,
+  ) async {
 
     final token = await TokenStorage.getToken();
 
-    await http.post(
+    final response = await http.post(
       Uri.parse("$baseUrl/projects/$projectId/tasks"),
 
       headers: {
@@ -68,5 +73,10 @@ class TaskService {
         "description": description
       }),
     );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception("Failed to create task");
+    }
   }
+
 }
