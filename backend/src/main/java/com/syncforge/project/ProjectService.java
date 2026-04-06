@@ -3,6 +3,7 @@ package com.syncforge.project;
 import com.syncforge.common.security.SecurityUtils;
 import com.syncforge.user.Role;
 import com.syncforge.user.User;
+import com.syncforge.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
 
     public Project createProject(String name, String description) {
 
@@ -49,39 +51,23 @@ public class ProjectService {
 
     public Project addMember(String projectId, AddMemberRequest request) {
 
-        User currentUser = SecurityUtils.getCurrentUser();
-
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        // Check if current user is ADMIN of the project
-        boolean isAdmin = project.getMembers().stream()
-                .anyMatch(member ->
-                        member.getUserId().equals(currentUser.getId()) &&
-                                member.getRole() == Role.ADMIN
-                );
 
-        if (!isAdmin) {
-            throw new RuntimeException("Only project admin can add members");
-        }
+        User user = userRepository.findByEmail(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Prevent duplicate members
         boolean alreadyMember = project.getMembers().stream()
-                .anyMatch(member ->
-                        member.getUserId().equals(request.userId())
-                );
+                .anyMatch(member -> member.getUserId().equals(user.getId()));
 
         if (alreadyMember) {
             throw new RuntimeException("User already a project member");
         }
 
-        ProjectMember newMember = ProjectMember.builder()
-                .userId(request.userId())
-                .role(Role.MEMBER)
-                .build();
-
-        project.getMembers().add(newMember);
-        project.setUpdatedAt(Instant.now());
+        project.getMembers().add(
+                new ProjectMember(user.getId(), Role.MEMBER)
+        );
 
         return projectRepository.save(project);
     }

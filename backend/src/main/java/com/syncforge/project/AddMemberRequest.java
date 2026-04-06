@@ -1,5 +1,10 @@
 package com.syncforge.project;
 
-public record AddMemberRequest(
-        String userId
-) {}
+import lombok.Data;
+
+@Data
+public class AddMemberRequest {
+
+    private String userId;   // email coming from frontend
+
+}
