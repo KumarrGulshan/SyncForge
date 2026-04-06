@@ -3,6 +3,7 @@ import 'task_service.dart';
 import 'task_model.dart';
 import '../../core/storage/token_storage.dart';
 import '../../core/websocket/socket_service.dart';
+import '../comments/comment_screen.dart';
 
 class TaskBoardScreen extends StatefulWidget {
   final String projectId;
@@ -193,40 +194,54 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
   Widget _taskCard(Task task) {
 
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.only(bottom: 12),
+    return InkWell(
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      onTap: () {
 
-      child: Padding(
-        padding: const EdgeInsets.all(14),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CommentScreen(taskId: task.id),
+          ),
+        );
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      },
 
-            Text(
-              task.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+      child: Card(
+        elevation: 3,
+        margin: const EdgeInsets.only(bottom: 12),
 
-            const SizedBox(height: 6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
 
-            if (task.description.isNotEmpty)
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
               Text(
-                task.description,
+                task.title,
                 style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-          ],
+
+              const SizedBox(height: 6),
+
+              if (task.description.isNotEmpty)
+                Text(
+                  task.description,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

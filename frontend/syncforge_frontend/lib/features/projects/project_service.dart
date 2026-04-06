@@ -4,7 +4,7 @@ import 'project_model.dart';
 
 class ProjectService {
 
-  // GET ALL PROJECTS
+  /// GET ALL PROJECTS
   static Future<List<Project>> getProjects() async {
 
     final token = await TokenStorage.getToken();
@@ -19,17 +19,34 @@ class ProjectService {
         .toList();
   }
 
-  // CREATE PROJECT
+  /// CREATE PROJECT
   static Future<void> createProject(
-      String name,
-      String description,
-      ) async {
+    String name,
+    String description,
+  ) async {
 
     final token = await TokenStorage.getToken();
 
     await ApiClient.post(
       "/projects?name=$name&description=$description",
       {},
+      token: token,
+    );
+  }
+
+  /// ADD MEMBER TO PROJECT
+  static Future<void> addMember(
+    String projectId,
+    String userId,
+  ) async {
+
+    final token = await TokenStorage.getToken();
+
+    await ApiClient.post(
+      "/projects/$projectId/members",
+      {
+        "userId": userId
+      },
       token: token,
     );
   }

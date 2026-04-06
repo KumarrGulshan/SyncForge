@@ -121,8 +121,19 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: list.length,
+
             itemBuilder: (context, index) {
-              return ProjectCard(project: list[index]);
+
+              return ProjectCard(
+                project: list[index],
+
+                // refresh project list when member is added
+                onMemberAdded: () {
+                  setState(() {
+                    _loadProjects();
+                  });
+                },
+              );
             },
           );
         },
