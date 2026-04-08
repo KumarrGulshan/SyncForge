@@ -47,12 +47,12 @@ public class FileService {
 
         // 🔒 File type validation
         String contentType = file.getContentType();
-        if (contentType == null ||
-                (!contentType.equals("image/png") &&
-                        !contentType.equals("image/jpeg") &&
-                        !contentType.equals("application/pdf"))) {
+        if (contentType != null) {
+            if (!(contentType.startsWith("image/") ||
+                    contentType.equals("application/pdf"))) {
 
-            throw new RuntimeException("Invalid file type");
+                throw new RuntimeException("Invalid file type");
+            }
         }
 
         // 🔒 Sanitize original filename
