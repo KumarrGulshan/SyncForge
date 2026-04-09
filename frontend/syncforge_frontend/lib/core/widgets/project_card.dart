@@ -64,7 +64,7 @@ class ProjectCard extends StatelessWidget {
 
     if (result == true) {
 
-      onMemberAdded();   // 🔥 refresh project list
+      onMemberAdded();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -78,10 +78,12 @@ class ProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Card(
-      elevation: 3,
+      elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
 
       child: InkWell(
+
+        borderRadius: BorderRadius.circular(16),
 
         onTap: () {
 
@@ -100,7 +102,6 @@ class ProjectCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
 
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
               Expanded(
@@ -120,22 +121,53 @@ class ProjectCard extends StatelessWidget {
 
                     Text(
                       project.description,
-                      style: const TextStyle(
-                        color: Colors.grey,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+
+                        const Icon(
+                          Icons.group,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+
+                        const SizedBox(width: 4),
+
+                        Text(
+                          "Members: ${project.members.length}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              IconButton(
-                icon: const Icon(Icons.person_add),
-                tooltip: "Add Member",
-                onPressed: () {
-                  _showAddMemberDialog(context);
-                },
-              ),
+              const SizedBox(width: 8),
 
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.person_add),
+                  tooltip: "Add Member",
+                  onPressed: () {
+                    _showAddMemberDialog(context);
+                  },
+                ),
+              ),
             ],
           ),
         ),

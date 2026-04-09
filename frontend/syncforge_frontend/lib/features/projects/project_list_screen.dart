@@ -38,26 +38,26 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     final token = await TokenStorage.getToken();
     final userId = await TokenStorage.getUserId();
 
-    if(token == null || userId == null) return;
+    if (token == null || userId == null) return;
 
     socket.connect(
-    token: token,
-     projectId: "",
-    userId: userId,
-    onProjectEvent: (event) {},
-    onNotification: (notification) {
+      token: token,
+      projectId: "",
+      userId: userId,
+      onProjectEvent: (event) {},
+      onNotification: (notification) {
 
-      print("Notification received: $notification");
+        print("Notification received: $notification");
 
-      setState(() {
-       notifications.insert(
-         0,
-         AppNotification.fromJson(notification),
-        );
-      });
+        setState(() {
+          notifications.insert(
+            0,
+            AppNotification.fromJson(notification),
+          );
+        });
 
-    },
-   );
+      },
+    );
   }
 
   void _showCreateProjectDialog() {
@@ -124,6 +124,15 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     );
   }
 
+  Future<void> _logout() async {
+
+    await TokenStorage.clearToken();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, "/");
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -134,11 +143,15 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
         actions: [
 
+          /// 🔔 Notification Bell
           Stack(
             children: [
 
               IconButton(
-                icon: const Icon(Icons.notifications),
+                icon: Icon(
+                  Icons.notifications,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
 
                 onPressed: () {
 
@@ -154,7 +167,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
                 },
               ),
 
-              if(notifications.isNotEmpty)
+              if (notifications.isNotEmpty)
                 Positioned(
                   right: 8,
                   top: 8,
@@ -175,7 +188,13 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
                 )
 
             ],
-          )
+          ),
+
+          /// 🚪 Logout Button
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
 
         ],
       ),
@@ -196,7 +215,34 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No projects found"));
+
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+
+                  Icon(
+                    Icons.folder_open,
+                    size: 60,
+                    color: Colors.grey,
+                  ),
+
+                  SizedBox(height: 10),
+
+                  Text(
+                    "No projects yet",
+                    style: TextStyle(fontSize: 18),
+                  ),
+
+                  SizedBox(height: 4),
+
+                  Text(
+                    "Create your first project",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
           }
 
           final list = snapshot.data!;

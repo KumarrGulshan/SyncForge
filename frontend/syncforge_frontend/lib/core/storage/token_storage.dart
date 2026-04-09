@@ -18,7 +18,7 @@ class TokenStorage {
   }
 
   /// Delete stored token (logout)
-  static Future<void> clear() async {
+  static Future<void> clearToken() async {
     await _storage.delete(key: _tokenKey);
   }
 

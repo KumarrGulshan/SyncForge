@@ -19,8 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login() async {
 
-    print("LOGIN BUTTON CLICKED");
-
     setState(() {
       loading = true;
     });
@@ -30,15 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController.text.trim(),
     );
 
-    print("LOGIN RESULT: $success");
-
     setState(() {
       loading = false;
     });
 
     if (success) {
-
-      print("NAVIGATING TO PROJECTS");
 
       Navigator.pushReplacementNamed(context, "/projects");
 
@@ -95,10 +89,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
 
-                        const Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: Color(0xFF2563EB),
+                        // LOGO
+                        Image.asset(
+                          "assets/images/syncforge_logo.png",
+                          height: 80,
                         ),
 
                         const SizedBox(height: 12),
@@ -165,6 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : const Text(
                                     "Login",
                                     style: TextStyle(
+                                      color:Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -184,7 +179,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
 
                             TextButton(
-
                               onPressed: () {
 
                                 Navigator.push(
