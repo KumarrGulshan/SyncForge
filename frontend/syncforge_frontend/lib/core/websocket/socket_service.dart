@@ -1,13 +1,18 @@
+import 'dart:convert';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class SocketService {
 
   StompClient? _client;
 
+  bool get isConnected => _client != null && _client!.connected;
+
   void connect({
-    required String projectId,
     required String token,
-    required Function(String message) onMessage,
+    required String projectId,
+    required String userId,
+    required Function(Map<String, dynamic>) onProjectEvent,
+    required Function(Map<String, dynamic>) onNotification,
   }) {
 
     if (_client != null && _client!.connected) {
@@ -17,7 +22,7 @@ class SocketService {
     _client = StompClient(
       config: StompConfig(
 
-        url: 'ws://192.168.1.105:8080/ws/websocket',
+        url: 'ws://192.168.1.137:8080/ws/websocket',
 
         reconnectDelay: const Duration(seconds: 5),
 
@@ -31,25 +36,42 @@ class SocketService {
 
         onConnect: (StompFrame frame) {
 
-          print("WebSocket Connected");
+          print("WebSocket CONNECTED");
 
-          _client?.subscribe(
+          /// PROJECT EVENTS
+          _client!.subscribe(
             destination: '/topic/project/$projectId',
-
             callback: (frame) {
 
               if (frame.body != null) {
 
-                print("Realtime event: ${frame.body}");
+                final data = jsonDecode(frame.body!);
 
-                onMessage(frame.body!);
+                print("Project Event: $data");
+
+                onProjectEvent(data);
               }
+            },
+          );
 
+          /// USER NOTIFICATIONS
+          _client!.subscribe(
+            destination: '/topic/user-$userId',
+            callback: (frame) {
+
+              if (frame.body != null) {
+
+                final data = jsonDecode(frame.body!);
+
+                print("Notification Event: $data");
+
+                onNotification(data);
+              }
             },
           );
         },
 
-        onWebSocketError: (dynamic error) {
+        onWebSocketError: (error) {
           print("WebSocket error: $error");
         },
 
@@ -60,7 +82,6 @@ class SocketService {
         onStompError: (frame) {
           print("STOMP error: ${frame.body}");
         },
-
       ),
     );
 
@@ -70,9 +91,12 @@ class SocketService {
   void disconnect() {
 
     if (_client != null) {
-      _client!.deactivate();
-      _client = null;
-    }
 
+      _client!.deactivate();
+
+      _client = null;
+
+      print("WebSocket manually disconnected");
+    }
   }
 }

@@ -16,9 +16,12 @@ class SyncForgeApp extends StatelessWidget {
       title: "SyncForge",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+
+      themeMode: ThemeMode.system,
       initialRoute: "/",
       routes: {
-        "/": (context) => LoginScreen(),
+        "/": (context) => LoginScreen(), 
         "/projects": (context) => ProjectListScreen(),
       },
     );

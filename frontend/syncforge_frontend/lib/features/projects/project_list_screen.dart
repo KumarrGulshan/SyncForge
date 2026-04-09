@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'project_service.dart';
 import 'project_model.dart';
 import '../../core/widgets/project_card.dart';
+import '../../core/storage/token_storage.dart';
+import '../../core/websocket/socket_service.dart';
+import '../notifications/notification_model.dart';
+import '../notifications/notification_screen.dart';
 
 class ProjectListScreen extends StatefulWidget {
   const ProjectListScreen({super.key});
@@ -14,14 +18,46 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   late Future<List<Project>> projects;
 
+  final SocketService socket = SocketService();
+
+  List<AppNotification> notifications = [];
+
   @override
   void initState() {
     super.initState();
     _loadProjects();
+    _connectNotifications();
   }
 
   void _loadProjects() {
     projects = ProjectService.getProjects();
+  }
+
+  Future<void> _connectNotifications() async {
+
+    final token = await TokenStorage.getToken();
+    final userId = await TokenStorage.getUserId();
+
+    if(token == null || userId == null) return;
+
+    socket.connect(
+    token: token,
+     projectId: "",
+    userId: userId,
+    onProjectEvent: (event) {},
+    onNotification: (notification) {
+
+      print("Notification received: $notification");
+
+      setState(() {
+       notifications.insert(
+         0,
+         AppNotification.fromJson(notification),
+        );
+      });
+
+    },
+   );
   }
 
   void _showCreateProjectDialog() {
@@ -95,6 +131,53 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
       appBar: AppBar(
         title: const Text("SyncForge Projects"),
+
+        actions: [
+
+          Stack(
+            children: [
+
+              IconButton(
+                icon: const Icon(Icons.notifications),
+
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NotificationScreen(
+                        notifications: notifications,
+                      ),
+                    ),
+                  );
+
+                },
+              ),
+
+              if(notifications.isNotEmpty)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      notifications.length.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                )
+
+            ],
+          )
+
+        ],
       ),
 
       floatingActionButton: FloatingActionButton(
@@ -127,7 +210,6 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
               return ProjectCard(
                 project: list[index],
 
-                // refresh project list when member is added
                 onMemberAdded: () {
                   setState(() {
                     _loadProjects();
@@ -139,5 +221,11 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    super.dispose();
   }
 }

@@ -55,100 +55,160 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
 
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+      body: Container(
 
-              child: Card(
-                elevation: 6,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF2563EB),
+              Color(0xFF06B6D4),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+        child: Center(
+          child: SingleChildScrollView(
 
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
 
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
 
-                      const Text(
-                        "SyncForge Login",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
+                child: Card(
+                  elevation: 12,
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 32,
+                    ),
+
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 48,
+                          color: Color(0xFF2563EB),
                         ),
-                      ),
 
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 12),
 
-                      CustomTextField(
-                        controller: emailController,
-                        label: "Email",
-                      ),
+                        const Text(
+                          "SyncForge",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
 
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 4),
 
-                      CustomTextField(
-                        controller: passwordController,
-                        label: "Password",
-                        obscure: true,
-                      ),
+                        const Text(
+                          "Team Collaboration Platform",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 30),
 
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
+                        CustomTextField(
+                          controller: emailController,
+                          label: "Email",
+                        ),
 
-                        child: ElevatedButton(
-                          onPressed: loading ? null : login,
+                        const SizedBox(height: 16),
 
-                          child: loading
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                        CustomTextField(
+                          controller: passwordController,
+                          label: "Password",
+                          obscure: true,
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+
+                          child: ElevatedButton(
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+
+                            onPressed: loading ? null : login,
+
+                            child: loading
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    "Login",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                )
-                              : const Text("Login"),
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 18),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
 
-                          const Text("Don't have an account?"),
+                            const Text(
+                              "Don't have an account?",
+                              style: TextStyle(fontSize: 13),
+                            ),
 
-                          TextButton(
-                            onPressed: () {
+                            TextButton(
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const RegisterScreen(),
+                              onPressed: () {
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
+                                );
+
+                              },
+
+                              child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
+                              ),
+                            )
 
-                            },
+                          ],
+                        ),
 
-                            child: const Text("Register"),
-                          )
-
-                        ],
-                      ),
-
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

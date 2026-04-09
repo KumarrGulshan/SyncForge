@@ -33,18 +33,24 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
   Future<void> _connectSocket() async {
 
     final token = await TokenStorage.getToken();
+    final userId = await TokenStorage.getUserId();
     if (token == null) return;
 
     socket.connect(
-      projectId: widget.projectId,
       token: token,
-      onMessage: (message) {
+      projectId: widget.projectId,
+      userId: userId!,
+      onProjectEvent: (event) {
 
-        print("Realtime update received: $message");
+        print("Realtime update: $event");
 
         setState(() {
           _loadTasks();
         });
+
+      },
+      onNotification: (notification) {
+        print("Notification: $notification");
       },
     );
   }
@@ -121,8 +127,21 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
     String title = status.replaceAll("_", " ");
 
     return Container(
-      width: 280,
-      margin: const EdgeInsets.all(12),
+      width: 300,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      padding: const EdgeInsets.all(14),
+
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
 
       child: DragTarget<Task>(
 
@@ -148,15 +167,29 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               Expanded(
                 child: ListView.builder(
@@ -172,11 +205,14 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
                       feedback: Material(
                         color: Colors.transparent,
-                        child: _taskCard(task),
+                        child: SizedBox(
+                          width: 260,
+                          child: _taskCard(task),
+                        ),
                       ),
 
                       childWhenDragging: Opacity(
-                        opacity: 0.4,
+                        opacity: 0.35,
                         child: _taskCard(task),
                       ),
 
@@ -208,15 +244,16 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
       },
 
       child: Card(
-        elevation: 3,
-        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 6,
+        shadowColor: Colors.black26,
+        margin: const EdgeInsets.only(bottom: 14),
 
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
 
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,8 +272,11 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
               if (task.description.isNotEmpty)
                 Text(
                   task.description,
-                  style: const TextStyle(
-                    color: Colors.grey,
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .color,
                     fontSize: 13,
                   ),
                 ),
@@ -258,6 +298,10 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
       builder: (context) {
 
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+
           title: const Text("Create Task"),
 
           content: Column(
