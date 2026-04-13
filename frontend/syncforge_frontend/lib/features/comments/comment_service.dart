@@ -5,7 +5,7 @@ import 'comment_model.dart';
 
 class CommentService {
 
-  static const baseUrl = "http://192.168.1.137:8080";
+  static const baseUrl = "http://192.168.1.127:8080";
 
   static Future<List<Comment>> getComments(String taskId) async {
 

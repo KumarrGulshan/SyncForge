@@ -9,9 +9,7 @@ environment:
 
 dependencies:
   flutter:
-  
     sdk: flutter
-
   http: ^1.2.0
   file_picker: ^8.0.0
   path: ^1.9.0
@@ -27,8 +25,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^3.0.0
+  
+  flutter_launcher_icons: ^0.13.1 
+
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/syncforge_logo.png"
+  min_sdk_android: 21 
 
 flutter:
   uses-material-design: true

@@ -28,7 +28,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: widget.notifications.isEmpty
           ? const Center(
               child: Text(
-                "No notifications yet",
+                "🔔 No notifications yet\nActivity updates will appear here.",
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
             )

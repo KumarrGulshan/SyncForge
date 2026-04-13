@@ -3,6 +3,7 @@ import 'task_service.dart';
 import 'task_model.dart';
 import '../../core/storage/token_storage.dart';
 import '../../core/websocket/socket_service.dart';
+import '../../core/utils/text_formatter.dart';
 import '../comments/comment_screen.dart';
 
 class TaskBoardScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
     final token = await TokenStorage.getToken();
     final userId = await TokenStorage.getUserId();
+
     if (token == null) return;
 
     socket.connect(
@@ -102,19 +104,14 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
 
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
+            child: Row(
+              children: [
 
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                _buildColumn("TODO", todo),
+                _buildColumn("IN_PROGRESS", progress),
+                _buildColumn("DONE", done),
 
-                  _buildColumn("TODO", todo),
-                  _buildColumn("IN_PROGRESS", progress),
-                  _buildColumn("DONE", done),
-
-                ],
-              ),
+              ],
             ),
           );
         },
@@ -124,10 +121,12 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
   Widget _buildColumn(String status, List<Task> tasks) {
 
-    String title = status.replaceAll("_", " ");
+    String title = TextFormatter.toTitleCase(status.replaceAll("_", " "));
 
     return Container(
-      width: 300,
+      width: 320,
+      height: MediaQuery.of(context).size.height - 120,
+
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       padding: const EdgeInsets.all(14),
 
@@ -167,6 +166,7 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
+              /// COLUMN HEADER
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 6),
@@ -175,14 +175,14 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
+                      .withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
                 ),
 
                 child: Text(
-                  title,
+                  "$title (${tasks.length})",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -191,6 +191,7 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
               const SizedBox(height: 14),
 
+              /// TASK LIST
               Expanded(
                 child: ListView.builder(
                   itemCount: tasks.length,
@@ -230,123 +231,124 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
   Widget _taskCard(Task task) {
 
-   return InkWell(
+    return InkWell(
 
-     borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14),
 
-     onTap: () {
+      onTap: () {
 
-       Navigator.push(
-         context,
-         MaterialPageRoute(
-           builder: (_) => CommentScreen(taskId: task.id),
-         ),
-       );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CommentScreen(taskId: task.id),
+          ),
+        );
 
-     },
+      },
 
-    child: Card(
+      child: Card(
 
-      elevation: 6,
-      shadowColor: Colors.black26,
-      margin: const EdgeInsets.only(bottom: 14),
+        elevation: 6,
+        shadowColor: Colors.black26,
+        margin: const EdgeInsets.only(bottom: 14),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
 
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-                Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.only(top: 6),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                Expanded(
-                  child: Text(
-                    task.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.only(top: 6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                ),
 
-              ],
-            ),
+                  const SizedBox(width: 8),
 
-            const SizedBox(height: 8),
+                  Expanded(
+                    child: Text(
+                      TextFormatter.toTitleCase(task.title),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
 
-            if (task.description.isNotEmpty)
-              Text(
-                task.description,
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodySmall!
-                      .color,
-                  fontSize: 13,
-                ),
+                ],
               ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
+              if (task.description.isNotEmpty)
+                Text(
+                  TextFormatter.toTitleCase(task.description),
+                  style: TextStyle(
                     color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    task.status.replaceAll("_", " "),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                        .textTheme
+                        .bodySmall!
+                        .color,
+                    fontSize: 13,
                   ),
                 ),
 
-                const Icon(
-                  Icons.chat_bubble_outline,
-                  size: 16,
-                  color: Colors.grey,
-                )
+              const SizedBox(height: 12),
 
-              ],
-            ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
 
-          ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      TextFormatter.toTitleCase(
+                          task.status.replaceAll("_", " ")),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+
+                  const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 16,
+                    color: Colors.grey,
+                  )
+
+                ],
+              ),
+
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   void _showCreateTaskDialog() {

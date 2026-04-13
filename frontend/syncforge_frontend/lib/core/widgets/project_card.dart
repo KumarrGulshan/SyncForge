@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../features/projects/project_model.dart';
 import '../../features/projects/project_service.dart';
 import '../../features/tasks/task_board_screen.dart';
+import '../utils/text_formatter.dart';
 
 class ProjectCard extends StatelessWidget {
 
@@ -28,7 +29,7 @@ class ProjectCard extends StatelessWidget {
           content: TextField(
             controller: userIdController,
             decoration: const InputDecoration(
-              labelText: "User ID / Email",
+              labelText: "Enter user email",
             ),
           ),
 
@@ -104,13 +105,31 @@ class ProjectCard extends StatelessWidget {
           child: Row(
             children: [
 
+              /// Project Avatar
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+
+                child: Text(
+                  TextFormatter.toTitleCase(project.name)[0],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              /// Project Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
                     Text(
-                      project.name,
+                      TextFormatter.toTitleCase(project.name),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -120,7 +139,7 @@ class ProjectCard extends StatelessWidget {
                     const SizedBox(height: 6),
 
                     Text(
-                      project.description,
+                      TextFormatter.toTitleCase(project.description),
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
@@ -155,9 +174,13 @@ class ProjectCard extends StatelessWidget {
 
               const SizedBox(width: 8),
 
+              /// Add Member Button
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(

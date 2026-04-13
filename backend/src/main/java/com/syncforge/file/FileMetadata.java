@@ -21,6 +21,8 @@ public class FileMetadata {
 
     private String fileName;
 
+    private long fileSize;
+
     private String fileType;
 
     private String filePath;

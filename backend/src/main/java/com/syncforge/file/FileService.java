@@ -89,6 +89,7 @@ public class FileService {
                 .taskId(taskId)
                 .fileName(originalFileName)
                 .fileType(contentType)
+                .fileSize(file.getSize())
                 .filePath(destination.getAbsolutePath())
                 .uploadedBy(user.getId())
                 .createdAt(Instant.now())
