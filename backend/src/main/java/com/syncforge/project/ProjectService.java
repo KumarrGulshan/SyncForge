@@ -1,6 +1,7 @@
 package com.syncforge.project;
 
 import com.syncforge.common.security.SecurityUtils;
+import com.syncforge.notification.NotificationService;
 import com.syncforge.user.Role;
 import com.syncforge.user.User;
 import com.syncforge.user.UserRepository;
@@ -17,6 +18,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public Project createProject(String name, String description) {
 
@@ -54,7 +56,6 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-
         User user = userRepository.findByEmail(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -69,6 +70,15 @@ public class ProjectService {
                 new ProjectMember(user.getId(), Role.MEMBER)
         );
 
-        return projectRepository.save(project);
+        Project savedProject = projectRepository.save(project);
+
+        // 🔔 Send notification to the user who was added
+        notificationService.sendNotification(
+                user.getId(),
+                "You were added to project '" + project.getName() + "'",
+                project.getId()
+        );
+
+        return savedProject;
     }
 }

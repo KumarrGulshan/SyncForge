@@ -38,15 +38,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
 
       body: Container(
 
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF2563EB),
-              Color(0xFF06B6D4),
+              colorScheme.primary,
+              colorScheme.secondary,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -62,7 +65,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 constraints: const BoxConstraints(maxWidth: 420),
 
                 child: Card(
-                  color: const Color(0xFF1E293B),
                   elevation: 8,
 
                   shape: RoundedRectangleBorder(
@@ -76,7 +78,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
 
-                        // LOGO
                         Image.asset(
                           "assets/images/syncforge_logo.png",
                           height: 80,
@@ -84,36 +85,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 10),
 
-                        const Text(
+                        Text(
                           "SyncForge",
-                          style: TextStyle(
-                            fontSize: 26,
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
                         ),
 
                         const SizedBox(height: 6),
 
-                        const Text(
+                        Text(
                           "Create your account",
-                          style: TextStyle(
-                            color: Colors.white70,
-                          ),
+                          style: theme.textTheme.bodyMedium,
                         ),
 
                         const SizedBox(height: 30),
 
                         TextField(
                           controller: nameController,
-                          style: const TextStyle(color: Colors.white),
-
                           decoration: const InputDecoration(
                             labelText: "Name",
-                            labelStyle: TextStyle(color: Colors.white70),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white54),
-                            ),
                           ),
                         ),
 
@@ -121,14 +112,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         TextField(
                           controller: emailController,
-                          style: const TextStyle(color: Colors.white),
-
                           decoration: const InputDecoration(
                             labelText: "Email",
-                            labelStyle: TextStyle(color: Colors.white70),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white54),
-                            ),
                           ),
                         ),
 
@@ -137,14 +122,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextField(
                           controller: passController,
                           obscureText: true,
-                          style: const TextStyle(color: Colors.white),
-
                           decoration: const InputDecoration(
                             labelText: "Password",
-                            labelStyle: TextStyle(color: Colors.white70),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white54),
-                            ),
                           ),
                         ),
 
@@ -156,22 +135,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           child: ElevatedButton(
 
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2563EB),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-
                             onPressed: loading ? null : register,
 
                             child: loading
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
                                 : const Text(
                                     "Register",
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color:Colors.white,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -181,13 +154,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
 
                         TextButton(
-                         onPressed: () {
-                           Navigator.pushReplacementNamed(context, "/");
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, "/");
                           },
-                         child: const Text(
-                          "Already have an account? Login",
-                          style: TextStyle(color: Colors.white70),
-                         ),
+                          child: const Text("Already have an account? Login"),
                         ),
 
                       ],

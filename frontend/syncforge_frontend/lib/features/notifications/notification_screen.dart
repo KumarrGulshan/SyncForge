@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
 import 'notification_model.dart';
+import 'notification_service.dart';
 
 class NotificationScreen extends StatefulWidget {
 
-  final List<AppNotification> notifications;
-
-  const NotificationScreen({
-    super.key,
-    required this.notifications,
-  });
+  const NotificationScreen({super.key});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+
+  late Future<List<AppNotification>> notifications;
+
+  @override
+  void initState() {
+    super.initState();
+    notifications = NotificationService.getNotifications();
+  }
+
+  Future<void> refresh() async {
+    setState(() {
+      notifications = NotificationService.getNotifications();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,23 +35,41 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: const Text("Notifications"),
       ),
 
-      body: widget.notifications.isEmpty
-          ? const Center(
+      body: FutureBuilder<List<AppNotification>>(
+
+        future: notifications,
+
+        builder: (context, snapshot) {
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
               child: Text(
                 "🔔 No notifications yet\nActivity updates will appear here.",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
-            )
-          : ListView.builder(
+            );
+          }
+
+          final list = snapshot.data!;
+
+          return RefreshIndicator(
+
+            onRefresh: refresh,
+
+            child: ListView.builder(
 
               padding: const EdgeInsets.all(16),
 
-              itemCount: widget.notifications.length,
+              itemCount: list.length,
 
               itemBuilder: (context, index) {
 
-                final n = widget.notifications[index];
+                final n = list[index];
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -83,7 +111,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          n.isRead ? "Read" : "New notification",
+                          n.createdAt,
                           style: TextStyle(
                             color: n.isRead
                                 ? Colors.grey
@@ -111,6 +139,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 );
               },
             ),
+          );
+        },
+      ),
     );
   }
 }

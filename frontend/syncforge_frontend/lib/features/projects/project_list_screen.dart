@@ -6,6 +6,7 @@ import '../../core/storage/token_storage.dart';
 import '../../core/websocket/socket_service.dart';
 import '../notifications/notification_model.dart';
 import '../notifications/notification_screen.dart';
+import '../notifications/notification_service.dart';
 
 class ProjectListScreen extends StatefulWidget {
   const ProjectListScreen({super.key});
@@ -25,14 +26,36 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
   @override
   void initState() {
     super.initState();
+
     _loadProjects();
+    _loadNotifications();
     _connectNotifications();
   }
 
+  /// Load projects
   void _loadProjects() {
     projects = ProjectService.getProjects();
   }
 
+  /// Load existing notifications from backend
+  Future<void> _loadNotifications() async {
+
+    try {
+
+      final data = await NotificationService.getNotifications();
+
+      setState(() {
+        notifications = data;
+      });
+
+    } catch (e) {
+
+      print("Failed to load notifications: $e");
+
+    }
+  }
+
+  /// Connect WebSocket for realtime notifications
   Future<void> _connectNotifications() async {
 
     final token = await TokenStorage.getToken();
@@ -44,10 +67,12 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
       token: token,
       projectId: "",
       userId: userId,
+
       onProjectEvent: (event) {},
+
       onNotification: (notification) {
 
-        print("Notification received: $notification");
+        print("Realtime notification: $notification");
 
         setState(() {
           notifications.insert(
@@ -55,11 +80,11 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
             AppNotification.fromJson(notification),
           );
         });
-
       },
     );
   }
 
+  /// Create project dialog
   void _showCreateProjectDialog() {
 
     final nameController = TextEditingController();
@@ -114,7 +139,6 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
                 setState(() {
                   _loadProjects();
                 });
-
               },
               child: const Text("Create"),
             ),
@@ -124,6 +148,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     );
   }
 
+  /// Logout
   Future<void> _logout() async {
 
     await TokenStorage.clearToken();
@@ -131,6 +156,22 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     if (!mounted) return;
 
     Navigator.pushReplacementNamed(context, "/");
+  }
+
+  /// Open notification screen
+  void _openNotifications() async {
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const NotificationScreen(),
+      ),
+    );
+
+    /// clear badge when user opens notifications
+    setState(() {
+      notifications.clear();
+    });
   }
 
   @override
@@ -152,19 +193,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
                   Icons.notifications,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
-
-                onPressed: () {
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => NotificationScreen(
-                        notifications: notifications,
-                      ),
-                    ),
-                  );
-
-                },
+                onPressed: _openNotifications,
               ),
 
               if (notifications.isNotEmpty)

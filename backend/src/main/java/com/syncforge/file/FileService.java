@@ -5,6 +5,7 @@ import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.task.Task;
 import com.syncforge.task.TaskRepository;
 import com.syncforge.user.User;
+import com.syncforge.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ public class FileService {
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
+    private final NotificationService notificationService;
 
     // ✅ Absolute path (safe)
     private final String UPLOAD_DIR = System.getProperty("user.home") + "/syncforge-uploads/";
@@ -95,7 +97,18 @@ public class FileService {
                 .createdAt(Instant.now())
                 .build();
 
-        return fileRepository.save(metadata);
+        FileMetadata savedFile = fileRepository.save(metadata);
+
+        // 🔔 Send notification to assigned user
+        if (task.getAssignedTo() != null) {
+            notificationService.sendNotification(
+                    task.getAssignedTo(),
+                    "File uploaded to task '" + task.getTitle() + "'",
+                    task.getId()
+            );
+        }
+
+        return savedFile;
     }
 
     public List<FileMetadata> getFiles(String taskId) {

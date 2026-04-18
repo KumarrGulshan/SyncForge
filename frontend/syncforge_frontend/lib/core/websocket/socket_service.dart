@@ -22,7 +22,7 @@ class SocketService {
     _client = StompClient(
       config: StompConfig(
 
-        url: 'ws://192.168.1.127:8080/ws/websocket',
+        url: 'ws://192.168.1.101:8080/ws/websocket',
 
         reconnectDelay: const Duration(seconds: 5),
 
