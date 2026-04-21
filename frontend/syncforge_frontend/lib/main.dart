@@ -4,6 +4,7 @@ import 'features/auth/login_screen.dart';
 import 'features/projects/project_list_screen.dart';
 import 'features/tasks/task_board_screen.dart';
 import 'features/comments/comment_screen.dart';
+import 'features/dashboard/dashboard_screen.dart';
 
 import 'core/theme/app_theme.dart';
 
@@ -33,6 +34,7 @@ class SyncForgeApp extends StatelessWidget {
         "/": (context) => LoginScreen(),
 
         "/projects": (context) => ProjectListScreen(),
+        "/dashboard": (context) => DashboardScreen(),
 
       },
 

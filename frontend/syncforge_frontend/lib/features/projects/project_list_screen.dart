@@ -184,6 +184,14 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
         actions: [
 
+          /// 📊 Dashboard Button
+          IconButton(
+            icon: const Icon(Icons.dashboard),
+            onPressed: () {
+              Navigator.pushNamed(context, "/dashboard");
+            },
+          ),
+
           /// 🔔 Notification Bell
           Stack(
             children: [
