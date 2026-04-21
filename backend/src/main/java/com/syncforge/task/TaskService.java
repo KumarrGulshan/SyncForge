@@ -4,6 +4,7 @@ import com.syncforge.common.security.SecurityUtils;
 import com.syncforge.notification.NotificationService;
 import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.user.User;
+import com.syncforge.user.UserRepository;
 import com.syncforge.websocket.SocketEvent;
 import com.syncforge.websocket.WebSocketService;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,10 @@ public class TaskService {
     private final ProjectSecurityService projectSecurityService;
     private final WebSocketService webSocketService;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     public Task createTask(String projectId, CreateTaskRequest request) {
 
-        // 🔐 SECURITY CHECK
         projectSecurityService.validateProjectMember(projectId);
 
         User currentUser = SecurityUtils.getCurrentUser();
@@ -39,10 +40,8 @@ public class TaskService {
                 .updatedAt(Instant.now())
                 .build();
 
-        // 💾 SAVE TASK
         Task savedTask = taskRepository.save(task);
 
-        // ⚡ REAL-TIME EVENT → TASK_CREATED
         SocketEvent event = SocketEvent.builder()
                 .type("TASK_CREATED")
                 .data(savedTask)
@@ -50,13 +49,22 @@ public class TaskService {
 
         webSocketService.sendProjectEvent(projectId, event);
 
-        // 🔔 NOTIFICATION (assigned user)
+        // 🔔 Notification with validation
         if (request.assignedTo() != null) {
-            notificationService.sendNotification(
-                    request.assignedTo(),
-                    "New task assigned: " + request.title(),
-                    savedTask.getId()
-            );
+
+            userRepository.findById(request.assignedTo()).ifPresent(assignedUser -> {
+
+                if (!assignedUser.getId().equals(currentUser.getId())) {
+
+                    notificationService.sendNotification(
+                            assignedUser.getId(),
+                            "New task assigned: " + request.title(),
+                            savedTask.getId()
+                    );
+
+                }
+
+            });
         }
 
         return savedTask;
@@ -64,7 +72,6 @@ public class TaskService {
 
     public List<Task> getProjectTasks(String projectId) {
 
-        // 🔐 SECURITY CHECK
         projectSecurityService.validateProjectMember(projectId);
 
         return taskRepository.findByProjectId(projectId);
@@ -75,16 +82,15 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        // 🔐 SECURITY CHECK
         projectSecurityService.validateProjectMember(task.getProjectId());
+
+        User currentUser = SecurityUtils.getCurrentUser();
 
         task.setStatus(request.status());
         task.setUpdatedAt(Instant.now());
 
-        // 💾 SAVE UPDATED TASK
         Task updatedTask = taskRepository.save(task);
 
-        // ⚡ REAL-TIME EVENT → TASK_STATUS_UPDATED
         SocketEvent event = SocketEvent.builder()
                 .type("TASK_STATUS_UPDATED")
                 .data(updatedTask)
@@ -92,13 +98,22 @@ public class TaskService {
 
         webSocketService.sendProjectEvent(task.getProjectId(), event);
 
-        // 🔔 NOTIFICATION (assigned user)
+        // 🔔 Notification with validation
         if (task.getAssignedTo() != null) {
-            notificationService.sendNotification(
-                    task.getAssignedTo(),
-                    "Task status updated to " + request.status(),
-                    task.getId()
-            );
+
+            userRepository.findById(task.getAssignedTo()).ifPresent(assignedUser -> {
+
+                if (!assignedUser.getId().equals(currentUser.getId())) {
+
+                    notificationService.sendNotification(
+                            assignedUser.getId(),
+                            "Task status updated to " + request.status(),
+                            task.getId()
+                    );
+
+                }
+
+            });
         }
 
         return updatedTask;

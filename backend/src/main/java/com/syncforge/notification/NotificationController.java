@@ -18,8 +18,7 @@ public class NotificationController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    @GetMapping
-    public List<Notification> getNotifications(HttpServletRequest request) {
+    private String getUserId(HttpServletRequest request) {
 
         String authHeader = request.getHeader("Authorization");
 
@@ -28,20 +27,50 @@ public class NotificationController {
         }
 
         String token = authHeader.substring(7);
+
         String email = jwtService.extractUsername(token);
 
-        System.out.println("EMAIL FROM JWT: " + email);
-
-        User user = userRepository.findByEmail(email)
+        User user = userRepository
+                .findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        System.out.println("USER ID FROM DB: " + user.getId());
+        return user.getId().toString();
+    }
 
-        List<Notification> notifications =
-                notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+    @GetMapping
+    public List<Notification> getNotifications(HttpServletRequest request) {
 
-        System.out.println("NOTIFICATION COUNT: " + notifications.size());
+        String userId = getUserId(request);
 
-        return notifications;
+        return notificationRepository
+                .findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    @PatchMapping("/{id}/read")
+    public Notification markAsRead(
+            @PathVariable String id,
+            HttpServletRequest request
+    ) {
+
+        String userId = getUserId(request);
+
+        Notification notification =
+                notificationRepository.findById(id).orElseThrow();
+
+        if (!notification.getUserId().equals(userId)) {
+            throw new RuntimeException("Access denied");
+        }
+
+        notification.setRead(true);
+
+        return notificationRepository.save(notification);
+    }
+
+    @DeleteMapping
+    public void clearNotifications(HttpServletRequest request) {
+
+        String userId = getUserId(request);
+
+        notificationRepository.deleteByUserId(userId);
     }
 }

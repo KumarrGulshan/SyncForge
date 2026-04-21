@@ -99,8 +99,9 @@ public class FileService {
 
         FileMetadata savedFile = fileRepository.save(metadata);
 
-        // 🔔 Send notification to assigned user
-        if (task.getAssignedTo() != null) {
+        // 🔔 FIXED NOTIFICATION LOGIC
+        if (task.getAssignedTo() != null && !task.getAssignedTo().equals(user.getId())) {
+
             notificationService.sendNotification(
                     task.getAssignedTo(),
                     "File uploaded to task '" + task.getTitle() + "'",

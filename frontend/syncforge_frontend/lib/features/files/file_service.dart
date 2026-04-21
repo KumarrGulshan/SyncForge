@@ -12,7 +12,7 @@ import 'file_model.dart';
 
 class FileService {
 
-  static const baseUrl = "http://192.168.1.101:8080";
+  static const baseUrl = "http://192.168.1.138:8080";
 
   // =========================
   // UPLOAD FILE

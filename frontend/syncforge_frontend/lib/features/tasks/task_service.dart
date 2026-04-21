@@ -7,7 +7,7 @@ import 'task_model.dart';
 
 class TaskService {
 
-  static const String baseUrl = "http://192.168.1.101:8080/api";
+  static const String baseUrl = "http://192.168.1.138:8080/api";
 
   /// Fetch all tasks of a project
   static Future<List<Task>> getTasks(String projectId) async {

@@ -22,37 +22,41 @@ class SocketService {
     _client = StompClient(
       config: StompConfig(
 
-        url: 'ws://192.168.1.101:8080/ws/websocket',
+        /// IMPORTANT: force native websocket
+        url: 'ws://192.168.1.138:8080/ws',
 
         reconnectDelay: const Duration(seconds: 5),
+
+        /// required for Android websocket handshake
+        webSocketConnectHeaders: {
+          'Authorization': 'Bearer $token',
+        },
 
         stompConnectHeaders: {
           'Authorization': 'Bearer $token',
         },
 
-        webSocketConnectHeaders: {
-          'Authorization': 'Bearer $token',
-        },
+        onConnect: (frame) {
 
-        onConnect: (StompFrame frame) {
-
-          print("WebSocket CONNECTED");
+          print("✅ WebSocket CONNECTED");
 
           /// PROJECT EVENTS
-          _client!.subscribe(
-            destination: '/topic/project/$projectId',
-            callback: (frame) {
+          if (projectId.isNotEmpty) {
+            _client!.subscribe(
+              destination: '/topic/project/$projectId',
+              callback: (frame) {
 
-              if (frame.body != null) {
+                if (frame.body != null) {
 
-                final data = jsonDecode(frame.body!);
+                  final data = jsonDecode(frame.body!);
 
-                print("Project Event: $data");
+                  print("📡 Project Event: $data");
 
-                onProjectEvent(data);
-              }
-            },
-          );
+                  onProjectEvent(data);
+                }
+              },
+            );
+          }
 
           /// USER NOTIFICATIONS
           _client!.subscribe(
@@ -63,7 +67,7 @@ class SocketService {
 
                 final data = jsonDecode(frame.body!);
 
-                print("Notification Event: $data");
+                print("🔔 Notification Event: $data");
 
                 onNotification(data);
               }
@@ -72,15 +76,15 @@ class SocketService {
         },
 
         onWebSocketError: (error) {
-          print("WebSocket error: $error");
+          print("❌ WebSocket error: $error");
         },
 
         onDisconnect: (frame) {
-          print("WebSocket disconnected");
+          print("⚠️ WebSocket disconnected");
         },
 
         onStompError: (frame) {
-          print("STOMP error: ${frame.body}");
+          print("❌ STOMP error: ${frame.body}");
         },
       ),
     );
@@ -96,7 +100,7 @@ class SocketService {
 
       _client = null;
 
-      print("WebSocket manually disconnected");
+      print("🔌 WebSocket manually disconnected");
     }
   }
 }

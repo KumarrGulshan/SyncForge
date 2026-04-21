@@ -6,6 +6,7 @@ import com.syncforge.project.ProjectSecurityService;
 import com.syncforge.task.Task;
 import com.syncforge.task.TaskRepository;
 import com.syncforge.user.User;
+import com.syncforge.user.UserRepository;
 import com.syncforge.websocket.SocketEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,6 +23,9 @@ public class CommentService {
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
     private final NotificationService notificationService;
+
+    // ✅ Added to validate user before sending notification
+    private final UserRepository userRepository;
 
     // 🔥 Direct messaging (better control for event types)
     private final SimpMessagingTemplate messagingTemplate;
@@ -44,7 +48,7 @@ public class CommentService {
 
         Comment saved = commentRepository.save(comment);
 
-        // 🔥 Real-time COMMENT event (correct type)
+        // 🔥 Real-time COMMENT event
         SocketEvent event = SocketEvent.builder()
                 .type("COMMENT_ADDED")
                 .data(saved)
@@ -55,15 +59,22 @@ public class CommentService {
                 event
         );
 
-        // 🔔 Notify assigned user (avoid self-notification)
-        if (task.getAssignedTo() != null &&
-                !task.getAssignedTo().equals(user.getId())) {
+        // 🔔 Safe Notification Logic
+        if (task.getAssignedTo() != null) {
 
-            notificationService.sendNotification(
-                    task.getAssignedTo(),
-                    "New comment on your task: " + task.getTitle(),
-                    taskId
-            );
+            userRepository.findById(task.getAssignedTo()).ifPresent(assignedUser -> {
+
+                if (!assignedUser.getId().equals(user.getId())) {
+
+                    notificationService.sendNotification(
+                            assignedUser.getId(),
+                            "New comment on your task: " + task.getTitle(),
+                            taskId
+                    );
+
+                }
+
+            });
         }
 
         return saved;

@@ -23,7 +23,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         registry.addEndpoint("/ws")
                 .addInterceptors(authInterceptor) // 🔐 attach JWT interceptor
-                .setAllowedOriginPatterns("*")   // allow frontend (Flutter/web)
-                .withSockJS();                  // fallback support
+                .setAllowedOriginPatterns("*");   // allow frontend (Flutter/web)
     }
 }

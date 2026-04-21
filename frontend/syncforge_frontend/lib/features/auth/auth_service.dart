@@ -5,7 +5,7 @@ import '../../core/storage/token_storage.dart';
 
 class AuthService {
 
-  static const String baseUrl = "http://192.168.1.101:8080";
+  static const String baseUrl = "http://192.168.1.138:8080";
 
   static Future<bool> login(String email, String password) async {
 
