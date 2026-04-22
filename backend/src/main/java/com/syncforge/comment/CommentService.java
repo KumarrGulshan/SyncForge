@@ -23,32 +23,40 @@ public class CommentService {
     private final TaskRepository taskRepository;
     private final ProjectSecurityService projectSecurityService;
     private final NotificationService notificationService;
-
-    // ✅ Added to validate user before sending notification
     private final UserRepository userRepository;
-
-    // 🔥 Direct messaging (better control for event types)
     private final SimpMessagingTemplate messagingTemplate;
 
     public Comment addComment(String taskId, AddCommentRequest request) {
 
+        // Find task
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        // Validate project member
         projectSecurityService.validateProjectMember(task.getProjectId());
 
+        // Get logged in user
         User user = SecurityUtils.getCurrentUser();
 
+        // Resolve username safely
+        String username = user.getFullName();
+
+        if (username == null || username.isBlank()) {
+            username = user.getEmail().split("@")[0]; // fallback if fullName missing
+        }
+
+        // Create comment
         Comment comment = Comment.builder()
                 .taskId(taskId)
                 .userId(user.getId())
+                .username(username)
                 .message(request.message())
                 .createdAt(Instant.now())
                 .build();
 
         Comment saved = commentRepository.save(comment);
 
-        // 🔥 Real-time COMMENT event
+        // Real-time websocket event
         SocketEvent event = SocketEvent.builder()
                 .type("COMMENT_ADDED")
                 .data(saved)
@@ -59,7 +67,7 @@ public class CommentService {
                 event
         );
 
-        // 🔔 Safe Notification Logic
+        // Notification logic
         if (task.getAssignedTo() != null) {
 
             userRepository.findById(task.getAssignedTo()).ifPresent(assignedUser -> {

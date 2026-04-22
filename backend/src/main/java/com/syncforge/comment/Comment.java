@@ -21,6 +21,8 @@ public class Comment {
 
     private String userId;
 
+    private String username;
+
     private String message;
 
     private Instant createdAt;

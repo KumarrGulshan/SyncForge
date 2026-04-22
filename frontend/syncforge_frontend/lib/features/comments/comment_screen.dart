@@ -297,8 +297,8 @@ class _CommentScreenState extends State<CommentScreen> {
 
                                         const SizedBox(width: 8),
 
-                                        const Text(
-                                          "Gulshan",
+                                        Text(
+                                          c.username,
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),

@@ -78,6 +78,19 @@ class ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    /// 🔥 SAFE DATA HANDLING
+    String safeName = project.name.trim();
+    if (safeName.isEmpty) safeName = "Untitled Project";
+
+    String safeDescription = project.description.trim();
+    if (safeDescription.isEmpty) safeDescription = "No description";
+
+    String formattedName = TextFormatter.toTitleCase(safeName);
+    String formattedDescription = TextFormatter.toTitleCase(safeDescription);
+
+    String avatarLetter =
+        formattedName.isNotEmpty ? formattedName[0].toUpperCase() : "?";
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -111,7 +124,7 @@ class ProjectCard extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.primary,
 
                 child: Text(
-                  TextFormatter.toTitleCase(project.name)[0],
+                  avatarLetter,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -129,7 +142,7 @@ class ProjectCard extends StatelessWidget {
                   children: [
 
                     Text(
-                      TextFormatter.toTitleCase(project.name),
+                      formattedName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -139,7 +152,7 @@ class ProjectCard extends StatelessWidget {
                     const SizedBox(height: 6),
 
                     Text(
-                      TextFormatter.toTitleCase(project.description),
+                      formattedDescription,
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
