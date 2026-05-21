@@ -153,11 +153,74 @@ class _TaskBoardScreenState
             );
           }
 
+          if (snapshot.hasError) {
+
+            return const Center(
+
+              child: Column(
+
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+
+                children: [
+
+                  Icon(
+                    Icons.error_outline,
+                    size: 60,
+                    color: Colors.red,
+                  ),
+
+                  SizedBox(height: 12),
+
+                  Text(
+                    "Failed to load tasks",
+                  ),
+                ],
+              ),
+            );
+          }
+
           if (!snapshot.hasData ||
               snapshot.data!.isEmpty) {
 
             return const Center(
-              child: Text("No tasks found"),
+
+              child: Column(
+
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+
+                children: [
+
+                  Icon(
+                    Icons.task_alt,
+                    size: 60,
+                    color: Colors.grey,
+                  ),
+
+                  SizedBox(height: 14),
+
+                  Text(
+
+                    "No tasks found",
+
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  SizedBox(height: 6),
+
+                  Text(
+                    "Create your first task",
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -323,43 +386,110 @@ class _TaskBoardScreenState
 
               Expanded(
 
-                child: ListView.builder(
+                child: tasks.isEmpty
 
-                  itemCount: tasks.length,
+                    ? Center(
 
-                  itemBuilder:
-                      (context, index) {
+                        child: Column(
 
-                    final task =
-                        tasks[index];
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
 
-                    return LongPressDraggable<Task>(
+                          children: [
 
-                      data: task,
+                            Icon(
+                              Icons.inbox,
+                              size: 42,
+                              color: Colors
+                                  .grey
+                                  .shade400,
+                            ),
 
-                      feedback: Material(
-                        color:
-                            Colors.transparent,
+                            const SizedBox(
+                              height: 10,
+                            ),
 
-                        child: SizedBox(
-                          width: 260,
-                          child:
-                              _taskCard(task),
+                            Text(
+
+                              "No tasks",
+
+                              style: TextStyle(
+                                color: Colors
+                                    .grey
+                                    .shade600,
+
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+
+                            const SizedBox(
+                              height: 4,
+                            ),
+
+                            Text(
+
+                              "Drop tasks here",
+
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      )
 
-                      childWhenDragging:
-                          Opacity(
-                        opacity: 0.35,
-                        child:
-                            _taskCard(task),
-                      ),
+                    : ListView.builder(
 
-                      child:
-                          _taskCard(task),
-                    );
-                  },
-                ),
+                        itemCount:
+                            tasks.length,
+
+                        itemBuilder:
+                            (
+                          context,
+                          index,
+                        ) {
+
+                          final task =
+                              tasks[index];
+
+                          return LongPressDraggable<Task>(
+
+                            data: task,
+
+                            feedback:
+                                Material(
+                              color: Colors
+                                  .transparent,
+
+                              child: SizedBox(
+                                width: 260,
+
+                                child:
+                                    _taskCard(
+                                  task,
+                                ),
+                              ),
+                            ),
+
+                            childWhenDragging:
+                                Opacity(
+                              opacity: 0.35,
+
+                              child:
+                                  _taskCard(
+                                task,
+                              ),
+                            ),
+
+                            child:
+                                _taskCard(
+                              task,
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           );
@@ -650,6 +780,8 @@ class _TaskBoardScreenState
 
     bool aiLoading = false;
 
+    bool creatingTask = false;
+
     showDialog(
 
       context: context,
@@ -743,16 +875,20 @@ class _TaskBoardScreenState
                         ),
                       ],
 
-                      onChanged: (value) {
+                      onChanged:
+                          creatingTask
+                              ? null
+                              : (value) {
 
-                        if (value != null) {
+                                  if (value !=
+                                      null) {
 
-                          setModalState(() {
-                            selectedPriority =
-                                value;
-                          });
-                        }
-                      },
+                                    setModalState(() {
+                                      selectedPriority =
+                                          value;
+                                    });
+                                  }
+                                },
                     ),
 
                     const SizedBox(
@@ -780,31 +916,37 @@ class _TaskBoardScreenState
                                 "${selectedDueDate!.year}",
                         ),
 
-                        onPressed: () async {
+                        onPressed:
+                            creatingTask
+                                ? null
+                                : () async {
 
-                          final picked =
-                              await showDatePicker(
+                                    final picked =
+                                        await showDatePicker(
 
-                            context: context,
+                                      context:
+                                          context,
 
-                            initialDate:
-                                DateTime.now(),
+                                      initialDate:
+                                          DateTime.now(),
 
-                            firstDate:
-                                DateTime.now(),
+                                      firstDate:
+                                          DateTime.now(),
 
-                            lastDate:
-                                DateTime(2030),
-                          );
+                                      lastDate:
+                                          DateTime(
+                                              2030),
+                                    );
 
-                          if (picked != null) {
+                                    if (picked !=
+                                        null) {
 
-                            setModalState(() {
-                              selectedDueDate =
-                                  picked;
-                            });
-                          }
-                        },
+                                      setModalState(() {
+                                        selectedDueDate =
+                                            picked;
+                                      });
+                                    }
+                                  },
                       ),
                     ),
                   ],
@@ -814,10 +956,14 @@ class _TaskBoardScreenState
               actions: [
 
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(
-                    context,
-                  ),
+
+                  onPressed:
+                      creatingTask
+                          ? null
+                          : () =>
+                              Navigator.pop(
+                                context,
+                              ),
 
                   child:
                       const Text("Cancel"),
@@ -842,94 +988,168 @@ class _TaskBoardScreenState
                   label:
                       const Text("Ask AI"),
 
-                  onPressed: aiLoading
-                      ? null
-                      : () async {
+                  onPressed:
+                      aiLoading ||
+                              creatingTask
+                          ? null
+                          : () async {
 
-                          if (titleController
-                              .text
-                              .trim()
-                              .isEmpty) {
-
-                            ScaffoldMessenger.of(
-                                    context)
-                                .showSnackBar(
-
-                              const SnackBar(
-                                content: Text(
-                                  "Enter task title first",
-                                ),
-                              ),
-                            );
-
-                            return;
-                          }
-
-                          setModalState(() {
-                            aiLoading = true;
-                          });
-
-                          try {
-
-                            final result =
-                                await AIService
-                                    .generateDescription(
-                              titleController
+                              if (titleController
                                   .text
-                                  .trim(),
-                            );
+                                  .trim()
+                                  .isEmpty) {
 
-                            descController.text =
-                                result;
+                                ScaffoldMessenger.of(
+                                        context)
+                                    .showSnackBar(
 
-                          } catch (e) {
+                                  const SnackBar(
+                                    content: Text(
+                                      "Enter task title first",
+                                    ),
+                                  ),
+                                );
 
-                            ScaffoldMessenger.of(
-                                    context)
-                                .showSnackBar(
+                                return;
+                              }
 
-                              SnackBar(
-                                content: Text(
-                                  "AI failed: $e",
-                                ),
-                              ),
-                            );
-                          }
+                              setModalState(() {
+                                aiLoading = true;
+                              });
 
-                          setModalState(() {
-                            aiLoading = false;
-                          });
-                        },
+                              try {
+
+                                final result =
+                                    await AIService
+                                        .generateDescription(
+                                  titleController
+                                      .text
+                                      .trim(),
+                                );
+
+                                descController.text =
+                                    result;
+
+                              } catch (e) {
+
+                                ScaffoldMessenger.of(
+                                        context)
+                                    .showSnackBar(
+
+                                  SnackBar(
+                                    content: Text(
+                                      e.toString(),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              setModalState(() {
+                                aiLoading = false;
+                              });
+                            },
                 ),
 
                 ElevatedButton(
 
-                  onPressed: () async {
+                  onPressed:
+                      creatingTask
+                          ? null
+                          : () async {
 
-                    await TaskService.createTask(
+                              if (titleController
+                                  .text
+                                  .trim()
+                                  .isEmpty) {
 
-                      widget.projectId,
+                                ScaffoldMessenger.of(
+                                        context)
+                                    .showSnackBar(
 
-                      titleController.text,
+                                  const SnackBar(
+                                    content: Text(
+                                      "Task title is required",
+                                    ),
+                                  ),
+                                );
 
-                      descController.text,
+                                return;
+                              }
 
-                      selectedPriority,
+                              try {
 
-                      selectedDueDate
-                          ?.toUtc()
-                          .toIso8601String(),
-                    );
+                                setModalState(() {
+                                  creatingTask =
+                                      true;
+                                });
 
-                    Navigator.pop(context);
+                                await TaskService
+                                    .createTask(
 
-                    setState(() {
-                      _loadTasks();
-                    });
-                  },
+                                  widget.projectId,
 
-                  child:
-                      const Text("Create"),
+                                  titleController
+                                      .text,
+
+                                  descController
+                                      .text,
+
+                                  selectedPriority,
+
+                                  selectedDueDate
+                                      ?.toUtc()
+                                      .toIso8601String(),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                Navigator.pop(
+                                  context,
+                                );
+
+                                setState(() {
+                                  _loadTasks();
+                                });
+
+                              } catch (e) {
+
+                                ScaffoldMessenger.of(
+                                        context)
+                                    .showSnackBar(
+
+                                  SnackBar(
+                                    content: Text(
+                                      "Failed to create task",
+                                    ),
+                                  ),
+                                );
+
+                              } finally {
+
+                                setModalState(() {
+                                  creatingTask =
+                                      false;
+                                });
+                              }
+                            },
+
+                  child: creatingTask
+
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+
+                      : const Text(
+                          "Create",
+                        ),
                 ),
               ],
             );

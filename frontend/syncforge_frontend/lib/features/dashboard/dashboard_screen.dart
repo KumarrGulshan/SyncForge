@@ -29,6 +29,10 @@ class _DashboardScreenState
 
   Future<void> _loadDashboard() async {
 
+    setState(() {
+      loading = true;
+    });
+
     try {
 
       final result =
@@ -123,6 +127,76 @@ class _DashboardScreenState
   }
 
   Widget buildPieChart() {
+
+    final int totalChartTasks =
+
+        (data!["todoTasks"] as int) +
+
+        (data!["progressTasks"] as int) +
+
+        (data!["doneTasks"] as int);
+
+    // =========================
+    // EMPTY STATE
+    // =========================
+
+    if (totalChartTasks == 0) {
+
+      return Card(
+
+        elevation: 4,
+
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(18),
+        ),
+
+        child: const Padding(
+
+          padding: EdgeInsets.all(40),
+
+          child: Column(
+
+            children: [
+
+              Icon(
+                Icons.pie_chart,
+                size: 60,
+                color: Colors.grey,
+              ),
+
+              SizedBox(height: 16),
+
+              Text(
+
+                "No analytics available",
+
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight:
+                      FontWeight.bold,
+                ),
+              ),
+
+              SizedBox(height: 8),
+
+              Text(
+
+                "Create tasks to see chart data",
+
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // =========================
+    // NORMAL PIE CHART
+    // =========================
 
     return Card(
 
@@ -250,6 +324,70 @@ class _DashboardScreenState
     );
   }
 
+  Widget buildErrorState() {
+
+    return Center(
+
+      child: Padding(
+
+        padding:
+            const EdgeInsets.all(24),
+
+        child: Column(
+
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+
+          children: [
+
+            const Icon(
+              Icons.error_outline,
+              size: 70,
+              color: Colors.red,
+            ),
+
+            const SizedBox(height: 18),
+
+            const Text(
+
+              "Failed to load dashboard",
+
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight:
+                    FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+
+              "Please check your connection and try again.",
+
+              textAlign: TextAlign.center,
+
+              style: TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            ElevatedButton.icon(
+
+              onPressed: _loadDashboard,
+
+              icon: const Icon(Icons.refresh),
+
+              label: const Text("Retry"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -268,11 +406,7 @@ class _DashboardScreenState
 
           : data == null
 
-              ? const Center(
-                  child: Text(
-                    "Failed to load dashboard",
-                  ),
-                )
+              ? buildErrorState()
 
               : RefreshIndicator(
 
