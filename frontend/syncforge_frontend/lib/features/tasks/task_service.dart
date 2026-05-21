@@ -56,6 +56,8 @@ class TaskService {
     String projectId,
     String title,
     String description,
+    String priority,
+    String? dueDate,
   ) async {
 
     final token = await TokenStorage.getToken();
@@ -70,7 +72,9 @@ class TaskService {
 
       body: jsonEncode({
         "title": title,
-        "description": description
+        "description": description,
+        "priority": priority,
+        "dueDate": dueDate
       }),
     );
 

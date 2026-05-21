@@ -19,7 +19,11 @@ public class Task {
 
     private String projectId;
 
+    private String priority;
+
     private String title;
+
+    private Instant dueDate;
 
     private String description;
 

@@ -34,9 +34,15 @@ public class TaskService {
                 .title(request.title())
                 .description(request.description())
                 .assignedTo(request.assignedTo())
+                .priority(
+                   request.priority() != null
+                     ? request.priority()
+                     : "MEDIUM"
+                )
                 .createdBy(currentUser.getId())
                 .status(TaskStatus.TODO)
-                .createdAt(Instant.now())
+                .dueDate(request.dueDate())
+                .createdAt(Instant.now()) 
                 .updatedAt(Instant.now())
                 .build();
 

@@ -30,6 +30,7 @@ class _TaskBoardScreenState
 
   @override
   void initState() {
+
     super.initState();
 
     _loadTasks();
@@ -53,6 +54,7 @@ class _TaskBoardScreenState
     if (token == null) return;
 
     socket.connect(
+
       token: token,
       projectId: widget.projectId,
       userId: userId!,
@@ -89,6 +91,37 @@ class _TaskBoardScreenState
     return tasks
         .where((t) => t.status == status)
         .toList();
+  }
+
+  Color _priorityColor(String priority) {
+
+    switch (priority) {
+
+      case "HIGH":
+        return Colors.red;
+
+      case "LOW":
+        return Colors.green;
+
+      default:
+        return Colors.orange;
+    }
+  }
+
+  bool _isOverdue(String dueDate) {
+
+    return DateTime.parse(dueDate)
+        .isBefore(DateTime.now());
+  }
+
+  String _formatDueDate(String dueDate) {
+
+    final date = DateTime.parse(dueDate);
+
+    return
+        "${date.day}/"
+        "${date.month}/"
+        "${date.year}";
   }
 
   @override
@@ -250,7 +283,6 @@ class _TaskBoardScreenState
 
             children: [
 
-              /// HEADER
               Container(
 
                 padding:
@@ -289,7 +321,6 @@ class _TaskBoardScreenState
 
               const SizedBox(height: 14),
 
-              /// TASK LIST
               Expanded(
 
                 child: ListView.builder(
@@ -512,6 +543,91 @@ class _TaskBoardScreenState
                   ),
                 ],
               ),
+
+              const SizedBox(height: 8),
+
+              Container(
+
+                padding:
+                    const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+
+                decoration: BoxDecoration(
+
+                  color: _priorityColor(
+                    task.priority,
+                  ).withOpacity(0.15),
+
+                  borderRadius:
+                      BorderRadius.circular(8),
+                ),
+
+                child: Text(
+
+                  task.priority,
+
+                  style: TextStyle(
+                    color: _priorityColor(
+                      task.priority,
+                    ),
+
+                    fontWeight:
+                        FontWeight.bold,
+
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+
+              if (task.dueDate != null) ...[
+
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+
+                    Icon(
+                      Icons.schedule,
+                      size: 14,
+
+                      color:
+                          _isOverdue(task.dueDate!)
+                              ? Colors.red
+                              : Colors.grey,
+                    ),
+
+                    const SizedBox(width: 4),
+
+                    Text(
+
+                      _formatDueDate(
+                        task.dueDate!,
+                      ),
+
+                      style: TextStyle(
+
+                        fontSize: 12,
+
+                        color:
+                            _isOverdue(
+                              task.dueDate!,
+                            )
+                                ? Colors.red
+                                : Colors.grey,
+
+                        fontWeight:
+                            _isOverdue(
+                              task.dueDate!,
+                            )
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -526,6 +642,11 @@ class _TaskBoardScreenState
 
     final descController =
         TextEditingController();
+
+    String selectedPriority =
+        "MEDIUM";
+
+    DateTime? selectedDueDate;
 
     bool aiLoading = false;
 
@@ -552,41 +673,142 @@ class _TaskBoardScreenState
               title:
                   const Text("Create Task"),
 
-              content: Column(
+              content: SingleChildScrollView(
 
-                mainAxisSize:
-                    MainAxisSize.min,
+                child: Column(
 
-                children: [
+                  mainAxisSize:
+                      MainAxisSize.min,
 
-                  TextField(
-                    controller:
-                        titleController,
+                  children: [
 
-                    decoration:
-                        const InputDecoration(
-                      labelText:
-                          "Task Title",
+                    TextField(
+                      controller:
+                          titleController,
+
+                      decoration:
+                          const InputDecoration(
+                        labelText:
+                            "Task Title",
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(
-                    height: 10,
-                  ),
-
-                  TextField(
-                    controller:
-                        descController,
-
-                    maxLines: 4,
-
-                    decoration:
-                        const InputDecoration(
-                      labelText:
-                          "Description",
+                    const SizedBox(
+                      height: 10,
                     ),
-                  ),
-                ],
+
+                    TextField(
+                      controller:
+                          descController,
+
+                      maxLines: 4,
+
+                      decoration:
+                          const InputDecoration(
+                        labelText:
+                            "Description",
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    DropdownButtonFormField<String>(
+
+                      value:
+                          selectedPriority,
+
+                      decoration:
+                          const InputDecoration(
+                        labelText:
+                            "Priority",
+                      ),
+
+                      items: const [
+
+                        DropdownMenuItem(
+                          value: "LOW",
+                          child: Text("LOW"),
+                        ),
+
+                        DropdownMenuItem(
+                          value: "MEDIUM",
+                          child: Text("MEDIUM"),
+                        ),
+
+                        DropdownMenuItem(
+                          value: "HIGH",
+                          child: Text("HIGH"),
+                        ),
+                      ],
+
+                      onChanged: (value) {
+
+                        if (value != null) {
+
+                          setModalState(() {
+                            selectedPriority =
+                                value;
+                          });
+                        }
+                      },
+                    ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    SizedBox(
+
+                      width: double.infinity,
+
+                      child:
+                          OutlinedButton.icon(
+
+                        icon: const Icon(
+                          Icons.calendar_today,
+                        ),
+
+                        label: Text(
+
+                          selectedDueDate ==
+                                  null
+                              ? "Select Due Date"
+                              : "${selectedDueDate!.day}/"
+                                "${selectedDueDate!.month}/"
+                                "${selectedDueDate!.year}",
+                        ),
+
+                        onPressed: () async {
+
+                          final picked =
+                              await showDatePicker(
+
+                            context: context,
+
+                            initialDate:
+                                DateTime.now(),
+
+                            firstDate:
+                                DateTime.now(),
+
+                            lastDate:
+                                DateTime(2030),
+                          );
+
+                          if (picked != null) {
+
+                            setModalState(() {
+                              selectedDueDate =
+                                  picked;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
               actions: [
@@ -601,7 +823,6 @@ class _TaskBoardScreenState
                       const Text("Cancel"),
                 ),
 
-                /// ASK AI
                 OutlinedButton.icon(
 
                   icon: aiLoading
@@ -686,9 +907,18 @@ class _TaskBoardScreenState
                   onPressed: () async {
 
                     await TaskService.createTask(
+
                       widget.projectId,
+
                       titleController.text,
+
                       descController.text,
+
+                      selectedPriority,
+
+                      selectedDueDate
+                          ?.toUtc()
+                          .toIso8601String(),
                     );
 
                     Navigator.pop(context);
