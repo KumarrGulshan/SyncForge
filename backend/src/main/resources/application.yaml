@@ -10,7 +10,7 @@ server:
   port: 8080
 
 gemini:
-  api-key: AIzaSyC6PMUkNNeXQ9npgb1-THk9bolicgxuDIM
+  api-key:
 
 
 
