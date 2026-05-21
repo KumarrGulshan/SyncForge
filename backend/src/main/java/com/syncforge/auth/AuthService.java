@@ -26,6 +26,7 @@ public class AuthService {
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .fullName(request.fullName())
+                .phoneNumber(request.phoneNumber())
                 .role(Role.MEMBER)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())

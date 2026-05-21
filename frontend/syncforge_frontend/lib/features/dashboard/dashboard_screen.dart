@@ -28,7 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final token = await TokenStorage.getToken();
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.138:8080/api/dashboard"),
+        Uri.parse("http://192.168.1.124:8080/api/dashboard"),
         headers: {
           "Authorization": "Bearer $token"
         },

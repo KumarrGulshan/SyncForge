@@ -6,7 +6,7 @@ import 'notification_model.dart';
 
 class NotificationService {
 
-  static const String baseUrl = "http://192.168.1.138:8080";
+  static const String baseUrl = "http://192.168.1.124:8080";
 
   /// Fetch all notifications
   static Future<List<AppNotification>> getNotifications() async {

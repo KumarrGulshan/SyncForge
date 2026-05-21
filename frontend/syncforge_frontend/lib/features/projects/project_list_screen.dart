@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+
 import 'project_service.dart';
 import 'project_model.dart';
+
 import '../../core/widgets/project_card.dart';
 import '../../core/storage/token_storage.dart';
 import '../../core/websocket/socket_service.dart';
+
 import '../notifications/notification_model.dart';
 import '../notifications/notification_screen.dart';
 import '../notifications/notification_service.dart';
+
+// ✅ PROFILE IMPORT
+import '../profile/profile_screen.dart';
 
 class ProjectListScreen extends StatefulWidget {
   const ProjectListScreen({super.key});
@@ -174,6 +180,17 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     });
   }
 
+  /// ✅ Open profile screen
+  void _openProfile() {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfileScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -227,6 +244,12 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
             ],
           ),
 
+          /// 👤 PROFILE BUTTON
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: _openProfile,
+          ),
+
           /// 🚪 Logout Button
           IconButton(
             icon: const Icon(Icons.logout),
@@ -248,7 +271,9 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {

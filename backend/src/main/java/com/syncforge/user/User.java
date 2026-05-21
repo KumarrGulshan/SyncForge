@@ -27,6 +27,8 @@ public class User {
 
     private Role role;
 
+    private String phoneNumber;
+
     private Instant createdAt;
     private Instant updatedAt;
 }

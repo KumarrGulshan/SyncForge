@@ -23,7 +23,7 @@ class SocketService {
       config: StompConfig(
 
         /// IMPORTANT: force native websocket
-        url: 'ws://192.168.1.138:8080/ws',
+        url: 'ws://192.168.1.124:8080/ws',
 
         reconnectDelay: const Duration(seconds: 5),
 
