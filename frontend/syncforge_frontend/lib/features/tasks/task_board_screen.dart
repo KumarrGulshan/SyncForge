@@ -5,36 +5,50 @@ import '../../core/storage/token_storage.dart';
 import '../../core/websocket/socket_service.dart';
 import '../../core/utils/text_formatter.dart';
 import '../comments/comment_screen.dart';
+import '../ai/ai_service.dart';
 
 class TaskBoardScreen extends StatefulWidget {
+
   final String projectId;
 
-  const TaskBoardScreen({super.key, required this.projectId});
+  const TaskBoardScreen({
+    super.key,
+    required this.projectId,
+  });
 
   @override
-  State<TaskBoardScreen> createState() => _TaskBoardScreenState();
+  State<TaskBoardScreen> createState() =>
+      _TaskBoardScreenState();
 }
 
-class _TaskBoardScreenState extends State<TaskBoardScreen> {
+class _TaskBoardScreenState
+    extends State<TaskBoardScreen> {
 
   late Future<List<Task>> _tasksFuture;
+
   final SocketService socket = SocketService();
 
   @override
   void initState() {
     super.initState();
+
     _loadTasks();
     _connectSocket();
   }
 
   void _loadTasks() {
-    _tasksFuture = TaskService.getTasks(widget.projectId);
+
+    _tasksFuture =
+        TaskService.getTasks(widget.projectId);
   }
 
   Future<void> _connectSocket() async {
 
-    final token = await TokenStorage.getToken();
-    final userId = await TokenStorage.getUserId();
+    final token =
+        await TokenStorage.getToken();
+
+    final userId =
+        await TokenStorage.getUserId();
 
     if (token == null) return;
 
@@ -42,6 +56,7 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
       token: token,
       projectId: widget.projectId,
       userId: userId!,
+
       onProjectEvent: (event) {
 
         print("Realtime update: $event");
@@ -49,9 +64,10 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
         setState(() {
           _loadTasks();
         });
-
       },
+
       onNotification: (notification) {
+
         print("Notification: $notification");
       },
     );
@@ -59,12 +75,20 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
   @override
   void dispose() {
+
     socket.disconnect();
+
     super.dispose();
   }
 
-  List<Task> _filter(List<Task> tasks, String status) {
-    return tasks.where((t) => t.status == status).toList();
+  List<Task> _filter(
+    List<Task> tasks,
+    String status,
+  ) {
+
+    return tasks
+        .where((t) => t.status == status)
+        .toList();
   }
 
   @override
@@ -76,7 +100,8 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
         title: const Text("Task Board"),
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:
+          FloatingActionButton(
         onPressed: _showCreateTaskDialog,
         child: const Icon(Icons.add),
       ),
@@ -87,30 +112,55 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
         builder: (context, snapshot) {
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No tasks found"));
+          if (!snapshot.hasData ||
+              snapshot.data!.isEmpty) {
+
+            return const Center(
+              child: Text("No tasks found"),
+            );
           }
 
           final tasks = snapshot.data!;
 
-          final todo = _filter(tasks, "TODO");
-          final progress = _filter(tasks, "IN_PROGRESS");
-          final done = _filter(tasks, "DONE");
+          final todo =
+              _filter(tasks, "TODO");
+
+          final progress =
+              _filter(tasks, "IN_PROGRESS");
+
+          final done =
+              _filter(tasks, "DONE");
 
           return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+
+            scrollDirection:
+                Axis.horizontal,
 
             child: Row(
               children: [
 
-                _buildColumn("TODO", todo),
-                _buildColumn("IN_PROGRESS", progress),
-                _buildColumn("DONE", done),
+                _buildColumn(
+                  "TODO",
+                  todo,
+                ),
 
+                _buildColumn(
+                  "IN_PROGRESS",
+                  progress,
+                ),
+
+                _buildColumn(
+                  "DONE",
+                  done,
+                ),
               ],
             ),
           );
@@ -119,26 +169,53 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
     );
   }
 
-  Widget _buildColumn(String status, List<Task> tasks) {
+  Widget _buildColumn(
+    String status,
+    List<Task> tasks,
+  ) {
 
-    String title = TextFormatter.toTitleCase(status.replaceAll("_", " "));
+    String title =
+        TextFormatter.toTitleCase(
+      status.replaceAll("_", " "),
+    );
 
     return Container(
-      width: 320,
-      height: MediaQuery.of(context).size.height - 120,
 
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      padding: const EdgeInsets.all(14),
+      width: 320,
+
+      height:
+          MediaQuery.of(context)
+                  .size
+                  .height -
+              120,
+
+      margin:
+          const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 16,
+      ),
+
+      padding:
+          const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
+
+        color:
+            Theme.of(context).cardColor,
+
+        borderRadius:
+            BorderRadius.circular(18),
+
         boxShadow: [
+
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black
+                .withOpacity(0.05),
+
             blurRadius: 10,
+
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
 
@@ -160,31 +237,52 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
           }
         },
 
-        builder: (context, candidateData, rejectedData) {
+        builder: (
+          context,
+          candidateData,
+          rejectedData,
+        ) {
 
           return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
             children: [
 
-              /// COLUMN HEADER
+              /// HEADER
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+
+                padding:
+                    const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
 
                 decoration: BoxDecoration(
+
                   color: Theme.of(context)
                       .colorScheme
                       .primary
                       .withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
+
+                  borderRadius:
+                      BorderRadius.circular(8),
                 ),
 
                 child: Text(
+
                   "$title (${tasks.length})",
+
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight:
+                        FontWeight.bold,
+
+                    color:
+                        Theme.of(context)
+                            .colorScheme
+                            .primary,
                   ),
                 ),
               ),
@@ -193,35 +291,45 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
               /// TASK LIST
               Expanded(
+
                 child: ListView.builder(
+
                   itemCount: tasks.length,
 
-                  itemBuilder: (context, index) {
+                  itemBuilder:
+                      (context, index) {
 
-                    final task = tasks[index];
+                    final task =
+                        tasks[index];
 
                     return LongPressDraggable<Task>(
 
                       data: task,
 
                       feedback: Material(
-                        color: Colors.transparent,
+                        color:
+                            Colors.transparent,
+
                         child: SizedBox(
                           width: 260,
-                          child: _taskCard(task),
+                          child:
+                              _taskCard(task),
                         ),
                       ),
 
-                      childWhenDragging: Opacity(
+                      childWhenDragging:
+                          Opacity(
                         opacity: 0.35,
-                        child: _taskCard(task),
+                        child:
+                            _taskCard(task),
                       ),
 
-                      child: _taskCard(task),
+                      child:
+                          _taskCard(task),
                     );
                   },
                 ),
-              )
+              ),
             ],
           );
         },
@@ -233,75 +341,116 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
     return InkWell(
 
-      borderRadius: BorderRadius.circular(14),
+      borderRadius:
+          BorderRadius.circular(14),
 
       onTap: () {
 
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => CommentScreen(taskId: task.id),
+            builder: (_) =>
+                CommentScreen(
+              taskId: task.id,
+            ),
           ),
         );
-
       },
 
       child: Card(
 
         elevation: 6,
-        shadowColor: Colors.black26,
-        margin: const EdgeInsets.only(bottom: 14),
+
+        shadowColor:
+            Colors.black26,
+
+        margin:
+            const EdgeInsets.only(
+          bottom: 14,
+        ),
 
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius:
+              BorderRadius.circular(14),
         ),
 
         child: Padding(
-          padding: const EdgeInsets.all(16),
+
+          padding:
+              const EdgeInsets.all(16),
 
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
             children: [
 
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
                 children: [
 
                   Container(
                     width: 8,
                     height: 8,
-                    margin: const EdgeInsets.only(top: 6),
+
+                    margin:
+                        const EdgeInsets.only(
+                      top: 6,
+                    ),
+
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          Theme.of(context)
+                              .colorScheme
+                              .primary,
+
+                      borderRadius:
+                          BorderRadius.circular(4),
                     ),
                   ),
 
                   const SizedBox(width: 8),
 
                   Expanded(
+
                     child: Text(
-                      TextFormatter.toTitleCase(task.title),
-                      style: const TextStyle(
+
+                      TextFormatter.toTitleCase(
+                        task.title,
+                      ),
+
+                      style:
+                          const TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight:
+                            FontWeight.w600,
                       ),
                     ),
                   ),
-
                 ],
               ),
 
               const SizedBox(height: 8),
 
-              if (task.description.isNotEmpty)
+              if (task.description
+                  .isNotEmpty)
+
                 Text(
-                  TextFormatter.toTitleCase(task.description),
+
+                  TextFormatter.toTitleCase(
+                    task.description,
+                  ),
+
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
                         .bodySmall!
                         .color,
+
                     fontSize: 13,
                   ),
                 ),
@@ -309,28 +458,49 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
               const SizedBox(height: 12),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                mainAxisAlignment:
+                    MainAxisAlignment
+                        .spaceBetween,
+
                 children: [
 
                   Container(
-                    padding: const EdgeInsets.symmetric(
+
+                    padding:
+                        const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 4,
                     ),
+
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+
+                      color:
+                          Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.1),
+
+                      borderRadius:
+                          BorderRadius.circular(8),
                     ),
+
                     child: Text(
+
                       TextFormatter.toTitleCase(
-                          task.status.replaceAll("_", " ")),
+                        task.status
+                            .replaceAll("_", " "),
+                      ),
+
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight:
+                            FontWeight.w600,
+
+                        color:
+                            Theme.of(context)
+                                .colorScheme
+                                .primary,
                       ),
                     ),
                   ),
@@ -339,11 +509,9 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
                     Icons.chat_bubble_outline,
                     size: 16,
                     color: Colors.grey,
-                  )
-
+                  ),
                 ],
               ),
-
             ],
           ),
         ),
@@ -353,68 +521,189 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> {
 
   void _showCreateTaskDialog() {
 
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
+    final titleController =
+        TextEditingController();
+
+    final descController =
+        TextEditingController();
+
+    bool aiLoading = false;
 
     showDialog(
+
       context: context,
 
       builder: (context) {
 
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+        return StatefulBuilder(
 
-          title: const Text("Create Task"),
+          builder: (
+            context,
+            setModalState,
+          ) {
 
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+            return AlertDialog(
 
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: "Task Title",
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(16),
               ),
 
-              const SizedBox(height: 10),
+              title:
+                  const Text("Create Task"),
 
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                ),
+              content: Column(
+
+                mainAxisSize:
+                    MainAxisSize.min,
+
+                children: [
+
+                  TextField(
+                    controller:
+                        titleController,
+
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          "Task Title",
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 10,
+                  ),
+
+                  TextField(
+                    controller:
+                        descController,
+
+                    maxLines: 4,
+
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          "Description",
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
 
-          actions: [
+              actions: [
 
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pop(
+                    context,
+                  ),
 
-            ElevatedButton(
-              onPressed: () async {
+                  child:
+                      const Text("Cancel"),
+                ),
 
-                await TaskService.createTask(
-                  widget.projectId,
-                  titleController.text,
-                  descController.text,
-                );
+                /// ASK AI
+                OutlinedButton.icon(
 
-                Navigator.pop(context);
+                  icon: aiLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
 
-                setState(() {
-                  _loadTasks();
-                });
-              },
-              child: const Text("Create"),
-            ),
-          ],
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.auto_awesome,
+                        ),
+
+                  label:
+                      const Text("Ask AI"),
+
+                  onPressed: aiLoading
+                      ? null
+                      : () async {
+
+                          if (titleController
+                              .text
+                              .trim()
+                              .isEmpty) {
+
+                            ScaffoldMessenger.of(
+                                    context)
+                                .showSnackBar(
+
+                              const SnackBar(
+                                content: Text(
+                                  "Enter task title first",
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          setModalState(() {
+                            aiLoading = true;
+                          });
+
+                          try {
+
+                            final result =
+                                await AIService
+                                    .generateDescription(
+                              titleController
+                                  .text
+                                  .trim(),
+                            );
+
+                            descController.text =
+                                result;
+
+                          } catch (e) {
+
+                            ScaffoldMessenger.of(
+                                    context)
+                                .showSnackBar(
+
+                              SnackBar(
+                                content: Text(
+                                  "AI failed: $e",
+                                ),
+                              ),
+                            );
+                          }
+
+                          setModalState(() {
+                            aiLoading = false;
+                          });
+                        },
+                ),
+
+                ElevatedButton(
+
+                  onPressed: () async {
+
+                    await TaskService.createTask(
+                      widget.projectId,
+                      titleController.text,
+                      descController.text,
+                    );
+
+                    Navigator.pop(context);
+
+                    setState(() {
+                      _loadTasks();
+                    });
+                  },
+
+                  child:
+                      const Text("Create"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
