@@ -65,7 +65,8 @@ public class TaskService {
                     notificationService.sendNotification(
                             assignedUser.getId(),
                             "New task assigned: " + request.title(),
-                            savedTask.getId()
+                            savedTask.getId(),
+                            savedTask.getProjectId()
                     );
 
                 }
@@ -114,7 +115,8 @@ public class TaskService {
                     notificationService.sendNotification(
                             assignedUser.getId(),
                             "Task status updated to " + request.status(),
-                            task.getId()
+                            task.getId(),
+                            task.getProjectId()
                     );
 
                 }

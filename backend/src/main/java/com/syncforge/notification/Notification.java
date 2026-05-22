@@ -23,6 +23,8 @@ public class Notification {
 
     private String referenceId; // taskId or projectId
 
+    private String projectId;
+
     private boolean isRead;
 
     private Instant createdAt;

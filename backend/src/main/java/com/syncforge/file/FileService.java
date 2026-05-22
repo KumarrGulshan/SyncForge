@@ -105,7 +105,9 @@ public class FileService {
             notificationService.sendNotification(
                     task.getAssignedTo(),
                     "File uploaded to task '" + task.getTitle() + "'",
-                    task.getId()
+                    task.getId(),
+                    task.getProjectId()
+
             );
         }
 

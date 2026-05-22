@@ -13,7 +13,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final WebSocketService webSocketService;
 
-    public void sendNotification(String userId, String message, String referenceId) {
+    public void sendNotification(String userId, String message, String referenceId, String projectId) {
 
         // Safety check (avoid broken notifications)
         if (userId == null || userId.isBlank()) {
@@ -32,6 +32,7 @@ public class NotificationService {
                 .userId(userId)
                 .message(message)
                 .referenceId(referenceId)
+                .projectId(projectId)
                 .isRead(false)
                 .createdAt(Instant.now())
                 .build();

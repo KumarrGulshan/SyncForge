@@ -77,7 +77,8 @@ public class CommentService {
                     notificationService.sendNotification(
                             assignedUser.getId(),
                             "New comment on your task: " + task.getTitle(),
-                            taskId
+                            taskId,
+                            task.getProjectId()
                     );
 
                 }

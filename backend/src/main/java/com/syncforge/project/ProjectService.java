@@ -1,11 +1,15 @@
 package com.syncforge.project;
 
 import com.syncforge.common.security.SecurityUtils;
+import com.syncforge.notification.NotificationRepository;
 import com.syncforge.notification.NotificationService;
+import com.syncforge.task.TaskRepository;
 import com.syncforge.user.Role;
 import com.syncforge.user.User;
 import com.syncforge.user.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,69 +20,207 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProjectService {
 
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
-    private final NotificationService notificationService;
+    private final ProjectRepository
+            projectRepository;
 
-    public Project createProject(String name, String description) {
+    private final UserRepository
+            userRepository;
 
-        User user = SecurityUtils.getCurrentUser();
+    private final NotificationService
+            notificationService;
 
-        ProjectMember ownerMember = ProjectMember.builder()
-                .userId(user.getId())
-                .role(Role.ADMIN)
-                .build();
+    private final TaskRepository
+            taskRepository;
 
-        List<ProjectMember> members = new ArrayList<>();
+    private final NotificationRepository
+            notificationRepository;
+
+    // =========================
+    // CREATE PROJECT
+    // =========================
+
+    public Project createProject(
+            String name,
+            String description
+    ) {
+
+        User user =
+                SecurityUtils
+                        .getCurrentUser();
+
+        ProjectMember ownerMember =
+                ProjectMember.builder()
+                        .userId(user.getId())
+                        .role(Role.ADMIN)
+                        .build();
+
+        List<ProjectMember> members =
+                new ArrayList<>();
+
         members.add(ownerMember);
 
-        Project project = Project.builder()
-                .name(name)
-                .description(description)
-                .ownerId(user.getId())
-                .members(members)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        Project project =
+                Project.builder()
+                        .name(name)
+                        .description(description)
+                        .ownerId(user.getId())
+                        .members(members)
+                        .createdAt(
+                                Instant.now()
+                        )
+                        .updatedAt(
+                                Instant.now()
+                        )
+                        .build();
 
-        return projectRepository.save(project);
+        return projectRepository
+                .save(project);
     }
 
-    public List<Project> getUserProjects() {
+    // =========================
+    // GET USER PROJECTS
+    // =========================
 
-        User user = SecurityUtils.getCurrentUser();
+    public List<Project>
+    getUserProjects() {
 
-        return projectRepository.findByMembersUserId(user.getId());
+        User user =
+                SecurityUtils
+                        .getCurrentUser();
+
+        return projectRepository
+                .findByMembersUserId(
+                        user.getId()
+                );
     }
 
-    public Project addMember(String projectId, AddMemberRequest request) {
+    // =========================
+    // ADD MEMBER
+    // =========================
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+    public Project addMember(
+            String projectId,
+            AddMemberRequest request
+    ) {
 
-        User user = userRepository.findByEmail(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Project project =
+                projectRepository
+                        .findById(projectId)
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "Project not found"
+                                        )
+                        );
 
-        boolean alreadyMember = project.getMembers().stream()
-                .anyMatch(member -> member.getUserId().equals(user.getId()));
+        User user =
+                userRepository
+                        .findByEmail(
+                                request.getUserId()
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "User not found"
+                                        )
+                        );
+
+        boolean alreadyMember =
+                project.getMembers()
+                        .stream()
+                        .anyMatch(
+                                member ->
+                                        member.getUserId()
+                                                .equals(
+                                                        user.getId()
+                                                )
+                        );
 
         if (alreadyMember) {
-            throw new RuntimeException("User already a project member");
+
+            throw new RuntimeException(
+                    "User already a project member"
+            );
         }
 
         project.getMembers().add(
-                new ProjectMember(user.getId(), Role.MEMBER)
+
+                new ProjectMember(
+                        user.getId(),
+                        Role.MEMBER
+                )
         );
 
-        Project savedProject = projectRepository.save(project);
+        Project savedProject =
+                projectRepository
+                        .save(project);
 
-        // 🔔 Send notification to the user who was added
-        notificationService.sendNotification(
-                user.getId(),
-                "You were added to project '" + project.getName() + "'",
-                project.getId()
-        );
+        // Send notification
+
+        notificationService
+                .sendNotification(
+
+                        user.getId(),
+
+                        "You were added to project '"
+                                + project.getName()
+                                + "'",
+
+                        project.getId(),
+
+                        project.getId()
+                );
 
         return savedProject;
+    }
+
+    // =========================
+    // DELETE PROJECT
+    // =========================
+
+    public void deleteProject(
+            String projectId
+    ) {
+
+        User currentUser =
+                SecurityUtils
+                        .getCurrentUser();
+
+        Project project =
+                projectRepository
+                        .findById(projectId)
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "Project not found"
+                                        )
+                        );
+
+        // Only owner can delete
+
+        if (!project.getOwnerId()
+                .equals(currentUser.getId())) {
+
+            throw new RuntimeException(
+                    "Only project owner can delete project"
+            );
+        }
+
+        // Delete all project tasks
+
+        taskRepository.deleteByProjectId(
+                projectId
+        );
+
+        // Delete project notifications
+
+        notificationRepository
+                .deleteByProjectId(
+                        projectId
+                );
+
+        // Finally delete project
+
+        projectRepository.delete(project);
     }
 }

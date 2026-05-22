@@ -50,4 +50,17 @@ class ProjectService {
       token: token,
     );
   }
+  /// DELETE PROJECT
+ static Future<void> deleteProject(
+     String projectId,
+   ) async {
+
+     final token =
+         await TokenStorage.getToken();
+
+     await ApiClient.delete(
+       "/projects/$projectId",
+        token: token,
+     );
+   }
 }

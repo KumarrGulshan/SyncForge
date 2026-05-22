@@ -31,5 +31,14 @@ public class ProjectController {
 
         return projectService.addMember(projectId, request);
     }
-    
+    @DeleteMapping("/{projectId}")
+    public void deleteProject(
+         @PathVariable String projectId
+    ) {
+
+      projectService.deleteProject(
+              projectId
+        );
+    }
+     
 }

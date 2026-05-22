@@ -1,167 +1,477 @@
 import 'package:flutter/material.dart';
+
+import '../../core/widgets/custom_textfield.dart';
+
 import 'auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
+
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() =>
+      _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState
+    extends State<RegisterScreen> {
 
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passController = TextEditingController();
+  final fullNameController =
+      TextEditingController();
+
+  final emailController =
+      TextEditingController();
+
+  final phoneController =
+      TextEditingController();
+
+  final passwordController =
+      TextEditingController();
+
+  final confirmPasswordController =
+      TextEditingController();
 
   bool loading = false;
 
   Future<void> register() async {
 
+    final fullName =
+        fullNameController.text.trim();
+
+    final email =
+        emailController.text.trim();
+
+    final phone =
+        phoneController.text.trim();
+
+    final password =
+        passwordController.text.trim();
+
+    final confirmPassword =
+        confirmPasswordController
+            .text
+            .trim();
+
+    // VALIDATION
+
+    if (fullName.isEmpty ||
+        email.isEmpty ||
+        phone.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+              Text("All fields are required"),
+        ),
+      );
+
+      return;
+    }
+
+    if (password != confirmPassword) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+              Text("Passwords do not match"),
+        ),
+      );
+
+      return;
+    }
+
     setState(() {
       loading = true;
     });
 
-    await AuthService.register(
-      nameController.text.trim(),
-      emailController.text.trim(),
-      passController.text.trim(),
+    bool success =
+        await AuthService.register(
+
+      fullName,
+
+      email,
+
+      phone,
+
+      password,
     );
 
     setState(() {
       loading = false;
     });
 
-    Navigator.pop(context);
+    if (!mounted) return;
+
+    if (success) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+              Text("Registration successful"),
+        ),
+      );
+
+      Navigator.pop(context);
+
+    } else {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+              Text("Registration failed"),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark =
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     return Scaffold(
 
       body: Container(
 
         decoration: BoxDecoration(
+
           gradient: LinearGradient(
-            colors: [
-              colorScheme.primary,
-              colorScheme.secondary,
-            ],
+
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
+
+            colors: isDark
+
+                ? [
+                    const Color(
+                        0xFF0F172A),
+                    const Color(
+                        0xFF111827),
+                    const Color(
+                        0xFF1E293B),
+                  ]
+
+                : [
+                    const Color(
+                        0xFFF8FAFC),
+                    const Color(
+                        0xFFE2E8F0),
+                    const Color(
+                        0xFFCBD5E1),
+                  ],
           ),
         ),
 
         child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
 
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+          child:
+              SingleChildScrollView(
 
-                child: Card(
-                  elevation: 8,
+            padding:
+                const EdgeInsets.all(24),
 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            child: ConstrainedBox(
+
+              constraints:
+                  const BoxConstraints(
+                maxWidth: 420,
+              ),
+
+              child: Card(
+
+                elevation: 10,
+
+                shape:
+                    RoundedRectangleBorder(
+
+                  borderRadius:
+                      BorderRadius.circular(
+                    24,
+                  ),
+                ),
+
+                child: Padding(
+
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 34,
                   ),
 
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
+                  child: Column(
 
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                    mainAxisSize:
+                        MainAxisSize.min,
 
-                        Image.asset(
-                          "assets/images/syncforge_logo.png",
-                          height: 80,
+                    children: [
+
+                      Container(
+
+                        padding:
+                            const EdgeInsets.all(
+                          18,
                         ),
 
-                        const SizedBox(height: 10),
+                        decoration:
+                            BoxDecoration(
 
-                        Text(
-                          "SyncForge",
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
+                          color: Theme.of(
+                                  context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.1),
+
+                          shape:
+                              BoxShape.circle,
+                        ),
+
+                        child: Icon(
+
+                          Icons.person_add_alt_1,
+
+                          size: 46,
+
+                          color:
+                              Theme.of(context)
+                                  .colorScheme
+                                  .primary,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 18,
+                      ),
+
+                      const Text(
+
+                        "Create Account",
+
+                        style: TextStyle(
+
+                          fontSize: 28,
+
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 6,
+                      ),
+
+                      Text(
+
+                        "Join SyncForge and collaborate smarter",
+
+                        textAlign:
+                            TextAlign.center,
+
+                        style: TextStyle(
+
+                          fontSize: 13,
+
+                          color:
+                              Colors.grey.shade500,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 30,
+                      ),
+
+                      CustomTextField(
+
+                        controller:
+                            fullNameController,
+
+                        label:
+                            "Full Name",
+                      ),
+
+                      const SizedBox(
+                        height: 16,
+                      ),
+
+                      CustomTextField(
+
+                        controller:
+                            emailController,
+
+                        label: "Email",
+                      ),
+
+                      const SizedBox(
+                        height: 16,
+                      ),
+
+                      CustomTextField(
+
+                        controller:
+                            phoneController,
+
+                        label:
+                            "Phone Number",
+                      ),
+
+                      const SizedBox(
+                        height: 16,
+                      ),
+
+                      CustomTextField(
+
+                        controller:
+                            passwordController,
+
+                        label:
+                            "Password",
+
+                        obscure: true,
+                      ),
+
+                      const SizedBox(
+                        height: 16,
+                      ),
+
+                      CustomTextField(
+
+                        controller:
+                            confirmPasswordController,
+
+                        label:
+                            "Confirm Password",
+
+                        obscure: true,
+                      ),
+
+                      const SizedBox(
+                        height: 28,
+                      ),
+
+                      SizedBox(
+
+                        width:
+                            double.infinity,
+
+                        height: 52,
+
+                        child:
+                            ElevatedButton(
+
+                          style:
+                              ElevatedButton.styleFrom(
+
+                            backgroundColor:
+                                Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+
+                            shape:
+                                RoundedRectangleBorder(
+
+                              borderRadius:
+                                  BorderRadius.circular(
+                                14,
+                              ),
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 6),
+                          onPressed:
+                              loading
+                                  ? null
+                                  : register,
 
-                        Text(
-                          "Create your account",
-                          style: theme.textTheme.bodyMedium,
-                        ),
+                          child:
+                              loading
 
-                        const SizedBox(height: 30),
+                                  ? const SizedBox(
 
-                        TextField(
-                          controller: nameController,
-                          decoration: const InputDecoration(
-                            labelText: "Name",
-                          ),
-                        ),
+                                      height: 22,
+                                      width: 22,
 
-                        const SizedBox(height: 16),
+                                      child:
+                                          CircularProgressIndicator(
+                                        strokeWidth:
+                                            2,
+                                        color:
+                                            Colors.white,
+                                      ),
+                                    )
 
-                        TextField(
-                          controller: emailController,
-                          decoration: const InputDecoration(
-                            labelText: "Email",
-                          ),
-                        ),
+                                  : const Text(
 
-                        const SizedBox(height: 16),
+                                      "Create Account",
 
-                        TextField(
-                          controller: passController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: "Password",
-                          ),
-                        ),
+                                      style:
+                                          TextStyle(
 
-                        const SizedBox(height: 28),
+                                        color:
+                                            Colors.white,
 
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
+                                        fontSize:
+                                            16,
 
-                          child: ElevatedButton(
-
-                            onPressed: loading ? null : register,
-
-                            child: loading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  )
-                                : const Text(
-                                    "Register",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                        fontWeight:
+                                            FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 18,
+                      ),
+
+                      Row(
+
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+
+                        children: [
+
+                          Text(
+
+                            "Already have an account?",
+
+                            style: TextStyle(
+                              color:
+                                  Colors.grey
+                                      .shade600,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 16),
+                          TextButton(
 
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, "/");
-                          },
-                          child: const Text("Already have an account? Login"),
-                        ),
+                            onPressed: () {
+                              Navigator.pop(
+                                  context);
+                            },
 
-                      ],
-                    ),
+                            child:
+                                const Text(
+
+                              "Login",
+
+                              style: TextStyle(
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
