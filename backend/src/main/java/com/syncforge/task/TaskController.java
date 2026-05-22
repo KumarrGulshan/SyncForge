@@ -30,4 +30,15 @@ public class TaskController {
 
         return taskService.updateTaskStatus(taskId, request);
     }
+    @DeleteMapping("/{taskId}")
+    public void deleteTask(
+        @PathVariable String projectId,
+        @PathVariable String taskId
+    ) {
+
+       taskService.deleteTask(
+                    projectId,
+                     taskId
+        );
+    }
 }

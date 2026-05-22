@@ -124,4 +124,27 @@ public class TaskService {
 
         return updatedTask;
     }
+    public void deleteTask(
+        String projectId,
+        String taskId
+    ) {
+
+    Task task = taskRepository
+            .findById(taskId)
+            .orElseThrow(
+                    () -> new RuntimeException(
+                            "Task not found"
+                    )
+            );
+
+    if (!task.getProjectId()
+            .equals(projectId)) {
+
+        throw new RuntimeException(
+                "Invalid project task"
+        );
+    }
+
+    taskRepository.delete(task);
+   }
 }

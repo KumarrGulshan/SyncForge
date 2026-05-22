@@ -48,4 +48,28 @@ class ApiClient {
 
     return jsonDecode(response.body);
   }
+  static Future<void> delete(
+  String endpoint,
+  {String? token}
+  ) async {
+
+    final response = await http.delete(
+
+      Uri.parse("$baseUrl$endpoint"),
+
+      headers: {
+
+        if (token != null)
+          "Authorization":
+              "Bearer $token"
+      },
+    );
+
+    if (response.statusCode >= 400) {
+ 
+      throw Exception(
+        "Delete request failed",
+      );
+   }
+  }
 }

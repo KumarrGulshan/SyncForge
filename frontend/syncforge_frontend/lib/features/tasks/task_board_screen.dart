@@ -666,11 +666,119 @@ class _TaskBoardScreenState
                     ),
                   ),
 
-                  const Icon(
-                    Icons.chat_bubble_outline,
-                    size: 16,
-                    color: Colors.grey,
-                  ),
+                  PopupMenuButton(
+
+  icon: const Icon(
+    Icons.more_vert,
+    size: 18,
+    color: Colors.grey,
+  ),
+
+  itemBuilder: (context) => [
+
+    const PopupMenuItem(
+      value: "delete",
+      child: Text("Delete"),
+    ),
+  ],
+
+  onSelected: (value) {
+
+    if (value == "delete") {
+
+      showDialog(
+
+        context: context,
+
+        builder: (context) {
+
+          return AlertDialog(
+
+            title:
+                const Text("Delete Task"),
+
+            content: Text(
+              "Delete '${task.title}' ?",
+            ),
+
+            actions: [
+
+              TextButton(
+
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+
+                child:
+                    const Text("Cancel"),
+              ),
+
+              ElevatedButton(
+
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Colors.red,
+                ),
+
+                onPressed: () async {
+
+                  try {
+
+                    await TaskService
+                        .deleteTask(
+                      widget.projectId,
+                      task.id,
+                    );
+
+                    if (!mounted) {
+                      return;
+                    }
+
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(
+                            context)
+                        .showSnackBar(
+
+                      const SnackBar(
+                        content: Text(
+                          "Task deleted",
+                        ),
+                      ),
+                    );
+
+                    setState(() {
+                      _loadTasks();
+                    });
+
+                  } catch (e) {
+
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(
+                            context)
+                        .showSnackBar(
+
+                      SnackBar(
+                        content: Text(
+                          "Delete failed",
+                        ),
+                      ),
+                    );
+                  }
+                },
+
+                child:
+                    const Text("Delete"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  },
+)
                 ],
               ),
 

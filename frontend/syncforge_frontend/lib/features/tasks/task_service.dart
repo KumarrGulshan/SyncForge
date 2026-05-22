@@ -82,5 +82,17 @@ class TaskService {
       throw Exception("Failed to create task");
     }
   }
+  static Future<void> deleteTask(
+  String projectId,
+  String taskId,
+  ) async {
 
+    final token =
+        await TokenStorage.getToken();
+
+    await ApiClient.delete(
+      "/projects/$projectId/tasks/$taskId",
+      token: token,
+    );
+  }
 }
