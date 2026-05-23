@@ -4,10 +4,11 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_client.dart';
 import '../../core/storage/token_storage.dart';
 import 'task_model.dart';
+import '../../core/config/app_config.dart';
 
 class TaskService {
 
-  static const String baseUrl = "http://192.168.1.124:8080/api";
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   /// Fetch all tasks of a project
   static Future<List<Task>> getTasks(String projectId) async {

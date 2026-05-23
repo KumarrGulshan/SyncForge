@@ -193,6 +193,9 @@ class _RegisterScreenState
 
                 elevation: 10,
 
+                color: Theme.of(context)
+                    .cardColor,
+
                 shape:
                     RoundedRectangleBorder(
 
@@ -217,11 +220,13 @@ class _RegisterScreenState
 
                     children: [
 
+                      // LOGO
+
                       Container(
 
                         padding:
                             const EdgeInsets.all(
-                          18,
+                          16,
                         ),
 
                         decoration:
@@ -231,22 +236,17 @@ class _RegisterScreenState
                                   context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.1),
+                              .withOpacity(0.08),
 
                           shape:
                               BoxShape.circle,
                         ),
 
-                        child: Icon(
+                        child: Image.asset(
 
-                          Icons.person_add_alt_1,
+                          "assets/images/syncforge_logo.png",
 
-                          size: 46,
-
-                          color:
-                              Theme.of(context)
-                                  .colorScheme
-                                  .primary,
+                          height: 64,
                         ),
                       ),
 

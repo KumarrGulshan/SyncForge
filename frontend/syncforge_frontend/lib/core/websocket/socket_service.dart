@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
+import '../config/app_config.dart';
 
 class SocketService {
 
@@ -23,7 +24,7 @@ class SocketService {
       config: StompConfig(
 
         /// IMPORTANT: force native websocket
-        url: 'ws://192.168.1.124:8080/ws',
+        url: AppConfig.websocketUrl,
 
         reconnectDelay: const Duration(seconds: 5),
 

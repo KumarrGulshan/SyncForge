@@ -1,26 +1,39 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-class ApiClient {
+import '../config/app_config.dart';
 
-  static const String baseUrl = "http://192.168.1.124:8080/api";
+class ApiClient {
 
   // =========================
   // POST REQUEST
   // =========================
+
   static Future<dynamic> post(
+
     String endpoint,
+
     Map<String, dynamic> body,
+
     {String? token}
+
   ) async {
 
     final response = await http.post(
-      Uri.parse("$baseUrl$endpoint"),
+
+      Uri.parse(
+        "${AppConfig.apiBaseUrl}$endpoint",
+      ),
 
       headers: {
-        "Content-Type": "application/json",
+
+        "Content-Type":
+            "application/json",
+
         if (token != null)
-          "Authorization": "Bearer $token"
+          "Authorization":
+              "Bearer $token"
       },
 
       body: jsonEncode(body),
@@ -32,30 +45,50 @@ class ApiClient {
   // =========================
   // GET REQUEST
   // =========================
+
   static Future<dynamic> get(
+
     String endpoint,
+
     {String? token}
+
   ) async {
 
     final response = await http.get(
-      Uri.parse("$baseUrl$endpoint"),
+
+      Uri.parse(
+        "${AppConfig.apiBaseUrl}$endpoint",
+      ),
 
       headers: {
+
         if (token != null)
-          "Authorization": "Bearer $token"
+          "Authorization":
+              "Bearer $token"
       },
     );
 
     return jsonDecode(response.body);
   }
+
+  // =========================
+  // DELETE REQUEST
+  // =========================
+
   static Future<void> delete(
-  String endpoint,
-  {String? token}
+
+    String endpoint,
+
+    {String? token}
+
   ) async {
 
-    final response = await http.delete(
+    final response =
+        await http.delete(
 
-      Uri.parse("$baseUrl$endpoint"),
+      Uri.parse(
+        "${AppConfig.apiBaseUrl}$endpoint",
+      ),
 
       headers: {
 
@@ -66,10 +99,10 @@ class ApiClient {
     );
 
     if (response.statusCode >= 400) {
- 
+
       throw Exception(
         "Delete request failed",
       );
-   }
+    }
   }
 }

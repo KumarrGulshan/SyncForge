@@ -9,10 +9,11 @@ import 'package:path/path.dart' as path;
 
 import '../../core/storage/token_storage.dart';
 import 'file_model.dart';
+import '../../core/config/app_config.dart';
 
 class FileService {
 
-  static const baseUrl = "http://192.168.1.124:8080";
+  static const baseUrl = AppConfig.baseUrl;
 
   // =========================
   // UPLOAD FILE

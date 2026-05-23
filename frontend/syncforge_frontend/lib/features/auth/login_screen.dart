@@ -156,7 +156,7 @@ class _LoginScreenState
 
                         padding:
                             const EdgeInsets.all(
-                          18,
+                          16,
                         ),
 
                         decoration:
@@ -166,22 +166,17 @@ class _LoginScreenState
                                   context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.1),
+                              .withOpacity(0.08),
 
                           shape:
                               BoxShape.circle,
                         ),
 
-                        child: Icon(
+                        child: Image.asset(
 
-                          Icons.hub_rounded,
+                          "assets/images/syncforge_logo.png",
 
-                          size: 48,
-
-                          color:
-                              Theme.of(context)
-                                  .colorScheme
-                                  .primary,
+                          height: 64,
                         ),
                       ),
 

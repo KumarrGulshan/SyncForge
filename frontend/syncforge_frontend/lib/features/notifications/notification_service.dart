@@ -3,10 +3,11 @@ import 'package:http/http.dart' as http;
 
 import '../../core/storage/token_storage.dart';
 import 'notification_model.dart';
+import '../../core/config/app_config.dart';
 
 class NotificationService {
 
-  static const String baseUrl = "http://192.168.1.124:8080";
+  static const String baseUrl = AppConfig.baseUrl;
 
   /// Fetch all notifications
   static Future<List<AppNotification>> getNotifications() async {
