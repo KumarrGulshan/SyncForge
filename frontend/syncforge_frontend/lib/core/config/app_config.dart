@@ -6,11 +6,11 @@ class AppConfig {
 
   // PHONE TESTING
   static const String server =
-      "192.168.1.124:8080";
+      "10.103.253.13:8080";
 
   // LAPTOP PRESENTATION
-  // static const String server =
-  //     "localhost:8080";
+   //static const String server =
+   //    "localhost:8080";
 
   // DEPLOYED SERVER
   // static const String server =

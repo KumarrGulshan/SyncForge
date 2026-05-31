@@ -4,57 +4,57 @@ import com.syncforge.auth.JwtService;
 import com.syncforge.user.User;
 import com.syncforge.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.server.HandshakeInterceptor;
-
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class WebSocketAuthInterceptor implements HandshakeInterceptor {
+@Slf4j
+public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request,
-                                   ServerHttpResponse response,
-                                   org.springframework.web.socket.WebSocketHandler wsHandler,
-                                   Map<String, Object> attributes) {
+    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        StompHeaderAccessor accessor = 
+                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        String query = request.getURI().getQuery();
+        // Intercept only when the client tries to initialize a STOMP connection
+        if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+            
+            // Extract the 'Authorization' header your Flutter code is passing
+            String authHeader = accessor.getFirstNativeHeader("Authorization");
 
-        if (query == null || !query.contains("token=")) {
-            return false;
-        }
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                try {
+                    String email = jwtService.extractUsername(token);
+                    User user = userRepository.findByEmail(email).orElse(null);
 
-        String token = query.split("token=")[1];
-
-        try {
-            String email = jwtService.extractUsername(token);
-
-            User user = userRepository.findByEmail(email).orElse(null);
-
-            if (user == null) {
-                return false;
+                    if (user != null) {
+                        // Bind the authenticated user directly into the active socket session attributes
+                        accessor.getSessionAttributes().put("user", user);
+                        log.info("✅ WebSocket authenticated successfully for user: {}", email);
+                    } else {
+                        log.error("❌ WebSocket auth failed: User not found.");
+                        return null; // Reject connection
+                    }
+                } catch (Exception e) {
+                    log.error("❌ WebSocket JWT validation crash: {}", e.getMessage());
+                    return null; // Reject connection
+                }
+            } else {
+                log.error("❌ WebSocket access denied: Missing or invalid Authorization header format.");
+                return null; // Reject connection
             }
-
-            // Attach user to WebSocket session
-            attributes.put("user", user);
-
-            return true;
-
-        } catch (Exception e) {
-            return false;
         }
-    }
-
-    @Override
-    public void afterHandshake(ServerHttpRequest request,
-                               ServerHttpResponse response,
-                               org.springframework.web.socket.WebSocketHandler wsHandler,
-                               Exception exception) {
+        return message;
     }
 }

@@ -2,6 +2,7 @@ package com.syncforge.websocket;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 
@@ -20,9 +21,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-
+        // Keep the endpoint clean without any handshake hooks
         registry.addEndpoint("/ws")
-                .addInterceptors(authInterceptor) // 🔐 attach JWT interceptor
-                .setAllowedOriginPatterns("*");   // allow frontend (Flutter/web)
+                .setAllowedOriginPatterns("*");
+                //.withSockJS(); // Supports web fallbacks smoothly
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        // Register the Auth Interceptor inside the active stream workflow channel
+        registration.interceptors(authInterceptor);
     }
 }
