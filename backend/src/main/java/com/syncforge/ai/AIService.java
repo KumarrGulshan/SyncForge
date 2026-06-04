@@ -27,7 +27,7 @@ public class AIService {
             System.out.println("TITLE: " + title);
 
             String url =
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
                             + apiKey;
 
             String prompt = """
@@ -65,12 +65,17 @@ public class AIService {
 
             System.out.println("CALLING GEMINI API...");
 
+            System.out.println("REQUEST BODY:");
+            System.out.println(requestBody);
+
             ResponseEntity<Map> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
                     Map.class
             );
+            System.out.println("STATUS CODE:");
+            System.out.println(response.getStatusCode());
 
             System.out.println("GEMINI STATUS: " + response.getStatusCode());
 

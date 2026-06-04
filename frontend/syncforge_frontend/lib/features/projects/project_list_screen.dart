@@ -10,6 +10,7 @@ import '../../core/websocket/socket_service.dart';
 import '../notifications/notification_model.dart';
 import '../notifications/notification_screen.dart';
 import '../notifications/notification_service.dart';
+import '../../core/responsive/responsive.dart';
 
 // ✅ PROFILE IMPORT
 import '../profile/profile_screen.dart';
@@ -22,7 +23,6 @@ class ProjectListScreen extends StatefulWidget {
 }
 
 class _ProjectListScreenState extends State<ProjectListScreen> {
-
   late Future<List<Project>> projects;
 
   final SocketService socket = SocketService();
@@ -45,25 +45,19 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   /// Load existing notifications from backend
   Future<void> _loadNotifications() async {
-
     try {
-
       final data = await NotificationService.getNotifications();
 
       setState(() {
         notifications = data;
       });
-
     } catch (e) {
-
       print("Failed to load notifications: $e");
-
     }
   }
 
   /// Connect WebSocket for realtime notifications
   Future<void> _connectNotifications() async {
-
     final token = await TokenStorage.getToken();
     final userId = await TokenStorage.getUserId();
 
@@ -77,14 +71,10 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
       onProjectEvent: (event) {},
 
       onNotification: (notification) {
-
         print("Realtime notification: $notification");
 
         setState(() {
-          notifications.insert(
-            0,
-            AppNotification.fromJson(notification),
-          );
+          notifications.insert(0, AppNotification.fromJson(notification));
         });
       },
     );
@@ -92,41 +82,33 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   /// Create project dialog
   void _showCreateProjectDialog() {
-
     final nameController = TextEditingController();
     final descController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
-
         return AlertDialog(
           title: const Text("Create Project"),
 
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Project Name",
-                ),
+                decoration: const InputDecoration(labelText: "Project Name"),
               ),
 
               const SizedBox(height: 10),
 
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                ),
+                decoration: const InputDecoration(labelText: "Description"),
               ),
             ],
           ),
 
           actions: [
-
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
@@ -134,7 +116,6 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
             ElevatedButton(
               onPressed: () async {
-
                 await ProjectService.createProject(
                   nameController.text.trim(),
                   descController.text.trim(),
@@ -156,7 +137,6 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   /// Logout
   Future<void> _logout() async {
-
     await TokenStorage.clearToken();
 
     if (!mounted) return;
@@ -166,12 +146,9 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   /// Open notification screen
   void _openNotifications() async {
-
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const NotificationScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const NotificationScreen()),
     );
 
     /// clear badge when user opens notifications
@@ -182,25 +159,19 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   /// ✅ Open profile screen
   void _openProfile() {
-
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const ProfileScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
         title: const Text("SyncForge Projects"),
 
         actions: [
-
           /// 📊 Dashboard Button
           IconButton(
             icon: const Icon(Icons.dashboard),
@@ -212,7 +183,6 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
           /// 🔔 Notification Bell
           Stack(
             children: [
-
               IconButton(
                 icon: Icon(
                   Icons.notifications,
@@ -233,29 +203,18 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
                     ),
                     child: Text(
                       notifications.length.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
                     ),
                   ),
-                )
-
+                ),
             ],
           ),
 
           /// 👤 PROFILE BUTTON
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: _openProfile,
-          ),
+          IconButton(icon: const Icon(Icons.person), onPressed: _openProfile),
 
           /// 🚪 Logout Button
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
         ],
       ),
 
@@ -265,36 +224,23 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
       ),
 
       body: FutureBuilder<List<Project>>(
-
         future: projects,
 
         builder: (context, snapshot) {
-
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-
-                  Icon(
-                    Icons.folder_open,
-                    size: 60,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.folder_open, size: 60, color: Colors.grey),
 
                   SizedBox(height: 10),
 
-                  Text(
-                    "No projects yet",
-                    style: TextStyle(fontSize: 18),
-                  ),
+                  Text("No projects yet", style: TextStyle(fontSize: 18)),
 
                   SizedBox(height: 4),
 
@@ -309,12 +255,29 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
           final list = snapshot.data!;
 
-          return ListView.builder(
+          return GridView.builder(
             padding: const EdgeInsets.all(16),
+
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: Responsive.isDesktop(context)
+                  ? 3
+                  : Responsive.isTablet(context)
+                  ? 2
+                  : 1,
+
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+
+              childAspectRatio: Responsive.isDesktop(context)
+                  ? 2.8
+                  : Responsive.isTablet(context)
+                  ? 2.4
+                  : 2.2,
+            ),
+
             itemCount: list.length,
 
             itemBuilder: (context, index) {
-
               return ProjectCard(
                 project: list[index],
 

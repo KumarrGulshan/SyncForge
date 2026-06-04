@@ -7,18 +7,13 @@ import '../tasks/task_model.dart';
 import 'profile_model.dart';
 
 class ProfileService {
-
   // =========================
   // GET PROFILE
   // =========================
   static Future<UserProfile> getProfile() async {
-
     final token = await TokenStorage.getToken();
 
-    final response = await ApiClient.get(
-      "/profile",
-      token: token,
-    );
+    final response = await ApiClient.get("/profile", token: token);
 
     return UserProfile.fromJson(response);
   }
@@ -27,13 +22,9 @@ class ProfileService {
   // GET PROJECT COUNT
   // =========================
   static Future<int> getProjectsCount() async {
-
     final token = await TokenStorage.getToken();
 
-    final response = await ApiClient.get(
-      "/projects",
-      token: token,
-    );
+    final response = await ApiClient.get("/projects", token: token);
 
     final List<Project> projects = response
         .map<Project>((p) => Project.fromJson(p))
@@ -46,13 +37,9 @@ class ProfileService {
   // GET USER TASK STATS
   // =========================
   static Future<Map<String, int>> getTaskStats() async {
-
     final token = await TokenStorage.getToken();
 
-    final response = await ApiClient.get(
-      "/projects",
-      token: token,
-    );
+    final response = await ApiClient.get("/projects", token: token);
 
     final List<Project> projects = response
         .map<Project>((p) => Project.fromJson(p))
@@ -62,7 +49,6 @@ class ProfileService {
     int completedTasks = 0;
 
     for (final project in projects) {
-
       final taskResponse = await ApiClient.get(
         "/projects/${project.id}/tasks",
         token: token,
@@ -74,13 +60,10 @@ class ProfileService {
 
       totalTasks = totalTasks + tasks.length;
 
-      completedTasks = completedTasks +
-          tasks.where((t) => t.status == "DONE").length;
+      completedTasks =
+          completedTasks + tasks.where((t) => t.status == "DONE").length;
     }
 
-    return {
-      "total": totalTasks,
-      "completed": completedTasks,
-    };
+    return {"total": totalTasks, "completed": completedTasks};
   }
 }

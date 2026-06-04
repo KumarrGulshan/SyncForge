@@ -7,12 +7,10 @@ import 'task_model.dart';
 import '../../core/config/app_config.dart';
 
 class TaskService {
-
   static const String baseUrl = AppConfig.apiBaseUrl;
 
   /// Fetch all tasks of a project
   static Future<List<Task>> getTasks(String projectId) async {
-
     final token = await TokenStorage.getToken();
 
     final response = await ApiClient.get(
@@ -20,9 +18,7 @@ class TaskService {
       token: token,
     );
 
-    return response
-        .map<Task>((t) => Task.fromJson(t))
-        .toList();
+    return response.map<Task>((t) => Task.fromJson(t)).toList();
   }
 
   /// Update task status (Drag & Drop)
@@ -31,7 +27,6 @@ class TaskService {
     String taskId,
     String status,
   ) async {
-
     final token = await TokenStorage.getToken();
 
     final response = await http.patch(
@@ -39,12 +34,10 @@ class TaskService {
 
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
+        "Authorization": "Bearer $token",
       },
 
-      body: jsonEncode({
-        "status": status
-      }),
+      body: jsonEncode({"status": status}),
     );
 
     if (response.statusCode != 200) {
@@ -60,7 +53,6 @@ class TaskService {
     String priority,
     String? dueDate,
   ) async {
-
     final token = await TokenStorage.getToken();
 
     final response = await http.post(
@@ -68,14 +60,14 @@ class TaskService {
 
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
+        "Authorization": "Bearer $token",
       },
 
       body: jsonEncode({
         "title": title,
         "description": description,
         "priority": priority,
-        "dueDate": dueDate
+        "dueDate": dueDate,
       }),
     );
 
@@ -83,17 +75,10 @@ class TaskService {
       throw Exception("Failed to create task");
     }
   }
-  static Future<void> deleteTask(
-  String projectId,
-  String taskId,
-  ) async {
 
-    final token =
-        await TokenStorage.getToken();
+  static Future<void> deleteTask(String projectId, String taskId) async {
+    final token = await TokenStorage.getToken();
 
-    await ApiClient.delete(
-      "/projects/$projectId/tasks/$taskId",
-      token: token,
-    );
+    await ApiClient.delete("/projects/$projectId/tasks/$taskId", token: token);
   }
 }

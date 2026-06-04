@@ -7,19 +7,14 @@ import '../projects/project_service.dart';
 import '../tasks/task_model.dart';
 
 class DashboardService {
-
   // =========================
   // GET DASHBOARD ANALYTICS
   // =========================
 
-  static Future<Map<String, dynamic>>
-  getTaskAnalytics() async {
+  static Future<Map<String, dynamic>> getTaskAnalytics() async {
+    final token = await TokenStorage.getToken();
 
-    final token =
-        await TokenStorage.getToken();
-
-    final List<Project> projects =
-        await ProjectService.getProjects();
+    final List<Project> projects = await ProjectService.getProjects();
 
     int totalTasks = 0;
 
@@ -36,90 +31,59 @@ class DashboardService {
     int doneTasks = 0;
 
     for (final project in projects) {
-
       final response = await ApiClient.get(
         "/projects/${project.id}/tasks",
         token: token,
       );
 
       final List<Task> tasks = response
-          .map<Task>(
-            (t) => Task.fromJson(t),
-          )
+          .map<Task>((t) => Task.fromJson(t))
           .toList();
 
       totalTasks += tasks.length;
 
-      completedTasks += tasks
-          .where((t) => t.status == "DONE")
-          .length;
+      completedTasks += tasks.where((t) => t.status == "DONE").length;
 
-      highPriorityTasks += tasks
-          .where((t) => t.priority == "HIGH")
-          .length;
+      highPriorityTasks += tasks.where((t) => t.priority == "HIGH").length;
 
-      todoTasks += tasks
-          .where((t) => t.status == "TODO")
-          .length;
+      todoTasks += tasks.where((t) => t.status == "TODO").length;
 
-      progressTasks += tasks
-          .where(
-            (t) =>
-                t.status ==
-                "IN_PROGRESS",
-          )
-          .length;
+      progressTasks += tasks.where((t) => t.status == "IN_PROGRESS").length;
 
-      doneTasks += tasks
-          .where((t) => t.status == "DONE")
-          .length;
+      doneTasks += tasks.where((t) => t.status == "DONE").length;
 
       overdueTasks += tasks.where((t) {
-
         if (t.dueDate == null) {
           return false;
         }
 
-        return DateTime.parse(
-          t.dueDate!,
-        ).isBefore(DateTime.now()) &&
+        return DateTime.parse(t.dueDate!).isBefore(DateTime.now()) &&
             t.status != "DONE";
-
       }).length;
     }
 
     double completionRate = 0;
 
     if (totalTasks > 0) {
-
-      completionRate =
-          (completedTasks / totalTasks) *
-              100;
+      completionRate = (completedTasks / totalTasks) * 100;
     }
 
     return {
-
       "projects": projects.length,
 
       "totalTasks": totalTasks,
 
-      "completedTasks":
-          completedTasks,
+      "completedTasks": completedTasks,
 
-      "overdueTasks":
-          overdueTasks,
+      "overdueTasks": overdueTasks,
 
-      "highPriorityTasks":
-          highPriorityTasks,
+      "highPriorityTasks": highPriorityTasks,
 
-      "completionRate":
-          completionRate
-              .toStringAsFixed(1),
+      "completionRate": completionRate.toStringAsFixed(1),
 
       "todoTasks": todoTasks,
 
-      "progressTasks":
-          progressTasks,
+      "progressTasks": progressTasks,
 
       "doneTasks": doneTasks,
     };

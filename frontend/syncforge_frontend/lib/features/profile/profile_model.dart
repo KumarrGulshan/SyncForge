@@ -1,5 +1,4 @@
 class UserProfile {
-
   final String fullName;
   final String email;
   final String phoneNumber;
@@ -13,7 +12,6 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-
     return UserProfile(
       fullName: json["fullName"] ?? "",
       email: json["email"] ?? "",

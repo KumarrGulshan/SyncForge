@@ -1,5 +1,4 @@
 class Project {
-
   final String id;
   final String name;
   final String description;
@@ -15,7 +14,6 @@ class Project {
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {
-
     return Project(
       id: json["id"],
       name: json["name"],

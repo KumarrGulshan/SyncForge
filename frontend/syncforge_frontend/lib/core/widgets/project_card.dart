@@ -7,7 +7,6 @@ import '../../features/tasks/task_board_screen.dart';
 import '../utils/text_formatter.dart';
 
 class ProjectCard extends StatelessWidget {
-
   final Project project;
 
   final VoidCallback onMemberAdded;
@@ -22,80 +21,45 @@ class ProjectCard extends StatelessWidget {
   // ADD MEMBER DIALOG
   // =========================
 
-  Future<void> _showAddMemberDialog(
-    BuildContext context,
-  ) async {
+  Future<void> _showAddMemberDialog(BuildContext context) async {
+    final userIdController = TextEditingController();
 
-    final userIdController =
-        TextEditingController();
-
-    final result =
-        await showDialog<bool>(
-
+    final result = await showDialog<bool>(
       context: context,
 
       builder: (context) {
-
         return AlertDialog(
-
-          title: const Text(
-            "Add Project Member",
-          ),
+          title: const Text("Add Project Member"),
 
           content: TextField(
+            controller: userIdController,
 
-            controller:
-                userIdController,
-
-            decoration:
-                const InputDecoration(
-              labelText:
-                  "Enter user email",
-            ),
+            decoration: const InputDecoration(labelText: "Enter user email"),
           ),
 
           actions: [
-
             TextButton(
-
               onPressed: () {
-
-                Navigator.pop(
-                  context,
-                  false,
-                );
+                Navigator.pop(context, false);
               },
 
-              child:
-                  const Text("Cancel"),
+              child: const Text("Cancel"),
             ),
 
             ElevatedButton(
-
               onPressed: () async {
-
-                final userId =
-                    userIdController.text
-                        .trim();
+                final userId = userIdController.text.trim();
 
                 if (userId.isEmpty) {
                   return;
                 }
 
-                await ProjectService
-                    .addMember(
-                  project.id,
-                  userId,
-                );
+                await ProjectService.addMember(project.id, userId);
 
-                Navigator.pop(
-                  context,
-                  true,
-                );
+                Navigator.pop(context, true);
               },
 
-              child:
-                  const Text("Add"),
+              child: const Text("Add"),
             ),
           ],
         );
@@ -103,18 +67,10 @@ class ProjectCard extends StatelessWidget {
     );
 
     if (result == true) {
-
       onMemberAdded();
 
-      ScaffoldMessenger.of(
-              context)
-          .showSnackBar(
-
-        const SnackBar(
-          content: Text(
-            "Member added successfully",
-          ),
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Member added successfully")),
       );
     }
   }
@@ -123,93 +79,51 @@ class ProjectCard extends StatelessWidget {
   // DELETE PROJECT
   // =========================
 
-  Future<void> _deleteProject(
-    BuildContext context,
-  ) async {
-
-    final result =
-        await showDialog<bool>(
-
+  Future<void> _deleteProject(BuildContext context) async {
+    final result = await showDialog<bool>(
       context: context,
 
       builder: (context) {
-
         return AlertDialog(
-
-          title:
-              const Text("Delete Project"),
+          title: const Text("Delete Project"),
 
           content: Text(
-
             "Delete '${project.name}' ?\n\n"
             "All tasks inside this project "
             "will also be deleted.",
           ),
 
           actions: [
-
             TextButton(
-
               onPressed: () {
-
-                Navigator.pop(
-                  context,
-                  false,
-                );
+                Navigator.pop(context, false);
               },
 
-              child:
-                  const Text("Cancel"),
+              child: const Text("Cancel"),
             ),
 
             ElevatedButton(
-
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
 
               onPressed: () async {
-
                 try {
-
-                  await ProjectService
-                      .deleteProject(
-                    project.id,
-                  );
+                  await ProjectService.deleteProject(project.id);
 
                   if (!context.mounted) {
                     return;
                   }
 
-                  Navigator.pop(
-                    context,
-                    true,
-                  );
-
+                  Navigator.pop(context, true);
                 } catch (e) {
-
-                  Navigator.pop(
-                    context,
-                    false,
-                  );
+                  Navigator.pop(context, false);
 
                   ScaffoldMessenger.of(
-                          context)
-                      .showSnackBar(
-
-                    SnackBar(
-                      content: Text(
-                        "Delete failed: $e",
-                      ),
-                    ),
-                  );
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Delete failed: $e")));
                 }
               },
 
-              child:
-                  const Text("Delete"),
+              child: const Text("Delete"),
             ),
           ],
         );
@@ -217,7 +131,6 @@ class ProjectCard extends StatelessWidget {
     );
 
     if (result == true) {
-
       onMemberAdded();
 
       if (!context.mounted) {
@@ -225,207 +138,133 @@ class ProjectCard extends StatelessWidget {
       }
 
       ScaffoldMessenger.of(
-              context)
-          .showSnackBar(
-
-        const SnackBar(
-          content: Text(
-            "Project deleted",
-          ),
-        ),
-      );
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Project deleted")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     // =========================
     // SAFE DATA HANDLING
     // =========================
 
-    String safeName =
-        project.name.trim();
+    String safeName = project.name.trim();
 
     if (safeName.isEmpty) {
-
-      safeName =
-          "Untitled Project";
+      safeName = "Untitled Project";
     }
 
-    String safeDescription =
-        project.description.trim();
+    String safeDescription = project.description.trim();
 
     if (safeDescription.isEmpty) {
-
-      safeDescription =
-          "No description";
+      safeDescription = "No description";
     }
 
-    String formattedName =
-        TextFormatter.toTitleCase(
-      safeName,
-    );
+    String formattedName = TextFormatter.toTitleCase(safeName);
 
-    String formattedDescription =
-        TextFormatter.toTitleCase(
-      safeDescription,
-    );
+    String formattedDescription = TextFormatter.toTitleCase(safeDescription);
 
-    String avatarLetter =
-        formattedName.isNotEmpty
-            ? formattedName[0]
-                .toUpperCase()
-            : "?";
+    String avatarLetter = formattedName.isNotEmpty
+        ? formattedName[0].toUpperCase()
+        : "?";
 
     return Card(
-
       elevation: 4,
 
-      margin:
-          const EdgeInsets.symmetric(
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
 
       child: InkWell(
-
-        borderRadius:
-            BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16),
 
         onTap: () {
-
           Navigator.push(
-
             context,
 
             MaterialPageRoute(
-
-              builder: (_) =>
-                  TaskBoardScreen(
-
-                projectId:
-                    project.id,
-              ),
+              builder: (_) => TaskBoardScreen(projectId: project.id),
             ),
           );
         },
 
         child: Padding(
-
-          padding:
-              const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
 
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-
               // =========================
               // PROJECT AVATAR
               // =========================
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
 
-              CircleAvatar(
+                child: CircleAvatar(
+                  radius: 24,
 
-                radius: 24,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
 
-                backgroundColor:
-                    Theme.of(context)
-                        .colorScheme
-                        .primary,
-
-                child: Text(
-
-                  avatarLetter,
-
-                  style:
-                      const TextStyle(
-                    color:
-                        Colors.white,
-
-                    fontWeight:
-                        FontWeight.bold,
-
-                    fontSize: 18,
+                  child: Text(
+                    avatarLetter,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),
-
               const SizedBox(width: 16),
 
               // =========================
               // PROJECT INFO
               // =========================
-
               Expanded(
-
                 child: Column(
-
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     Text(
-
                       formattedName,
 
-                      style:
-                          const TextStyle(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+
+                      style: const TextStyle(
                         fontSize: 18,
 
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 6,
-                    ),
+                    const SizedBox(height: 6),
 
                     Text(
-
                       formattedDescription,
 
-                      style: TextStyle(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
 
-                        color:
-                            Theme.of(
-                              context,
-                            )
-                                .textTheme
-                                .bodySmall
-                                ?.color,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
 
                     Row(
-
                       children: [
+                        const Icon(Icons.group, size: 16, color: Colors.grey),
 
-                        const Icon(
-                          Icons.group,
-                          size: 16,
-                          color:
-                              Colors.grey,
-                        ),
-
-                        const SizedBox(
-                          width: 4,
-                        ),
+                        const SizedBox(width: 4),
 
                         Text(
-
                           "Members: ${project.members.length}",
 
-                          style:
-                              const TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
-                            color:
-                                Colors.grey,
+                            color: Colors.grey,
                           ),
                         ),
                       ],
@@ -439,70 +278,42 @@ class ProjectCard extends StatelessWidget {
               // =========================
               // ACTION MENU
               // =========================
-
               PopupMenuButton<String>(
-
                 onSelected: (value) {
-
-                  if (value ==
-                      "add_member") {
-
-                    _showAddMemberDialog(
-                      context,
-                    );
+                  if (value == "add_member") {
+                    _showAddMemberDialog(context);
                   }
 
-                  if (value ==
-                      "delete") {
-
-                    _deleteProject(
-                      context,
-                    );
+                  if (value == "delete") {
+                    _deleteProject(context);
                   }
                 },
 
                 itemBuilder: (context) => [
-
                   const PopupMenuItem(
-
-                    value:
-                        "add_member",
+                    value: "add_member",
 
                     child: Row(
-
                       children: [
-
-                        Icon(
-                          Icons.person_add,
-                        ),
+                        Icon(Icons.person_add),
 
                         SizedBox(width: 8),
 
-                        Text(
-                          "Add Member",
-                        ),
+                        Text("Add Member"),
                       ],
                     ),
                   ),
 
                   const PopupMenuItem(
-
                     value: "delete",
 
                     child: Row(
-
                       children: [
-
-                        Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ),
+                        Icon(Icons.delete, color: Colors.red),
 
                         SizedBox(width: 8),
 
-                        Text(
-                          "Delete Project",
-                        ),
+                        Text("Delete Project"),
                       ],
                     ),
                   ),
